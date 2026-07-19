@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>comma L2 private prototype</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <header class="header">
+        <h1>comma L2 Responsibility Prototype</h1>
+        <p class="resp">Level-2: you monitor the road and are ready to intervene.</p>
+      </header>
+
+      <section class="card">
+        <h2>Invariant cue</h2>
+        <div class="level-rail">Responsibility cue is always present; this is always advisory guidance, never autonomy.</div>
+        <p class="boundary">Confidence, reserve, and urgency are independent signals—not a claim of jointly feasible control.</p>
+      </section>
+
+      <section class="card">
+        <h2>Continuous confidence</h2>
+        <div id="confidence" class="rail" role="meter" aria-label="driving confidence" aria-valuemin="0" aria-valuemax="100">
+          <div class="rail-label">Driving confidence: <span id="confidenceLabel">unknown</span></div>
+          <div class="rail-track">
+            <div id="confidenceFill" class="rail-fill"></div>
+            <div id="confidenceFillText" class="rail-text"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Orthogonal actuator reserve (steering / brake / accel)</h2>
+        <div id="reserves" class="reserve-grid">
+          <div id="steer" class="reserve" role="meter" aria-label="steering reserve" aria-valuemin="0" aria-valuemax="100">
+            <h3>Steering ◉</h3>
+            <div class="rail-track">
+              <div class="rail-fill"></div>
+            </div>
+            <p class="rail-meta">reserve</p>
+          </div>
+          <div id="brake" class="reserve" role="meter" aria-label="brake reserve" aria-valuemin="0" aria-valuemax="100">
+            <h3>Brake ━</h3>
+            <div class="rail-track">
+              <div class="rail-fill"></div>
+            </div>
+            <p class="rail-meta">reserve</p>
+          </div>
+          <div id="accel" class="reserve" role="meter" aria-label="acceleration reserve" aria-valuemin="0" aria-valuemax="100">
+            <h3>Accel ≈</h3>
+            <div class="rail-track">
+              <div class="rail-fill"></div>
+            </div>
+            <p class="rail-meta">reserve</p>
+          </div>
+        </div>
+        <p id="reserveState" class="status" aria-live="polite"></p>
+      </section>
+
+      <section class="card">
+        <h2>Intervention urgency (independent channel)</h2>
+        <div id="urgency" class="urgency" role="meter" aria-label="intervention urgency" aria-valuemin="0" aria-valuemax="100">
+          <div id="urgencyFill" class="urgency-fill"></div>
+          <div id="urgencyText" class="urgency-text"></div>
+        </div>
+        <p class="status" id="urgencyHint">Orthogonal channel; not inferred from reserve bars.</p>
+      </section>
+
+      <section class="card controls">
+        <h2>Scenario</h2>
+        <p id="scenarioState" class="status" aria-live="polite">Manual exploration</p>
+        <details>
+        <summary>Prototype controls</summary>
+        <label>Confidence score <output id="confidenceOutput">0.78</output><input id="confidenceInput" type="range" min="0" max="1" step="0.01" value="0.78"></label>
+        <label>Steering request (simulated) <output id="steerReqOutput">0.20</output><input id="steerRequestInput" type="range" min="0" max="1" step="0.01" value="0.20"></label>
+        <label>Steering headroom <output id="steerHeadOutput">0.80</output><input id="steerHeadInput" type="range" min="0" max="1" step="0.01" value="0.80"></label>
+        <label>Brake headroom <output id="brakeOutput">0.62</output><input id="brakeInput" type="range" min="0" max="1" step="0.01" value="0.62"></label>
+        <label>Accel headroom <output id="accelOutput">0.55</output><input id="accelInput" type="range" min="0" max="1" step="0.01" value="0.55"></label>
+        <label>Intervention urgency <output id="urgencyOutput">0.40</output><input id="urgencyInput" type="range" min="0" max="1" step="0.01" value="0.40"></label>
+        <label><input id="steerAvail" type="checkbox" checked> Steering available</label>
+        <label><input id="brakeAvail" type="checkbox" checked> Brake available</label>
+        <label><input id="accelAvail" type="checkbox" checked> Accel available</label>
+        <label><input id="steerSat" type="checkbox"> Steering saturated (force zero)</label>
+        <label><input id="steerPressed" type="checkbox"> Steering pressed (driver override)</label>
+        <label><input id="dataFresh" type="checkbox" checked> Fresh signal</label>
+        <label>Data age (ms) <output id="ageOutput">0</output><input id="ageInput" type="range" min="0" max="2500" step="50" value="0"></label>
+        <div class="controls-row">
+          <button id="runScenario">Run deterministic steering-limit scenario</button>
+          <button id="seedScenario">Reset inputs</button>
+        </div>
+        </details>
+      </section>
+
+      <section class="card proxy-note" aria-label="evaluator boundary">
+        <h2>NON-OFFICIAL LOCAL PROXY EVALUATOR</h2>
+        <p>Behavioral self-check only. Not an official comma.ai evaluator, score, submission, or claim of acceptance.</p>
+      </section>
+    </main>
+
+    <script type="module" src="ui.js"></script>
+  </body>
+</html>

@@ -1,0 +1,22 @@
+RED
+command: node prototype/tests/run-tests.mjs
+exit: 1
+output:
+AssertionError [ERR_ASSERTION]: stale confidence is unavailable, not historical
+
+0.6 !== null
+
+    at file:///home/vhpnk/Work/comma-leaderboard/design/prototype/tests/prototype_engine.test.mjs:12:8
+
+GREEN
+command: node prototype/tests/run-tests.mjs
+exit: 0
+output:
+prototype engine tests: pass
+artifact contract tests: pass
+
+Rationale: the red contract proved that stale confidence remained deceptively
+visible. The implementation now marks stale confidence, urgency, and actuator
+reserve channels unavailable; the green run also covers deterministic scenario
+timing, the steering saturation latch, accessibility/static artifact boundaries,
+flat rendering, and the non-official evaluator label.

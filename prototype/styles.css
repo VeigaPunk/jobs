@@ -1,0 +1,44 @@
+:root {
+  --bg: #f4f3ef;
+  --ink: #1d232a;
+  --rail-bg: #d8dde3;
+  --green: #1f8f4e;
+  --yellow: #9f7d00;
+  --red: #b53030;
+  --dash: #9aa2ac;
+}
+
+* { box-sizing: border-box; }
+body { margin: 0; background: #edf0f4; color: var(--ink); font-family: "Trebuchet MS", "Segoe UI", Tahoma, sans-serif; }
+.shell { width: min(920px, 100% - 2rem); margin: 1rem auto; display: grid; gap: 0.75rem; }
+.card { border: 2px solid #bfc8d4; background: #fbfcff; padding: 0.75rem; }
+.header h1 { margin: 0.2rem 0; }
+.resp { margin: 0; font-weight: 600; }
+.rail-track, .urgency { border: 2px solid #2f3b4b; background: var(--rail-bg); height: 34px; position: relative; overflow: hidden; }
+.rail-fill, .urgency-fill { height: 100%; width: 0%; transition: width 140ms linear; }
+.rail-fill { background: #4b9ed5; }
+.rail-text, .urgency-text { position: absolute; right: 8px; top: 8px; font-weight: 700; color: #101b2b; }
+.rail { margin-bottom: 0.5rem; }
+.rail-label { margin-bottom: 0.3rem; font-weight: 700; }
+.reserve-grid { display: grid; gap: 0.6rem; grid-template-columns: 1fr 1fr 1fr; }
+.reserve h3 { margin: 0.2rem 0; }
+.rail-meta { margin: 0.15rem 0 0; font-size: 0.85rem; }
+.rail .unavailable, .railTrack .unavailable { background: var(--dash); }
+.status { margin: 0.4rem 0 0; min-height: 1.2rem; }
+.urgency { background: #e4ecf5; }
+.urgency-fill { background: #c93b3b; }
+label { display: block; margin: 0.35rem 0; }
+.controls-row { display: flex; gap: 0.5rem; }
+button { padding: 0.35rem 0.8rem; font-weight: 700; background: #223448; color: #f8fafb; border: 2px solid #223448; }
+button:hover { background: #172538; }
+.unavailable-state { border-style: dashed; background: var(--dash); }
+.red .rail-fill { background: #c33e3e; }
+.yellow .rail-fill { background: #c9a100; }
+.green .rail-fill { background: #2a9b4b; }
+.boundary { border-left: 5px solid #43566c; padding-left: 0.6rem; font-weight: 700; }
+.proxy-note { border-style: dashed; }
+.proxy-note h2 { font-size: 1rem; letter-spacing: 0.04em; }
+summary { cursor: pointer; font-weight: 700; margin-bottom: 0.5rem; }
+@media (max-width: 760px) {
+  .reserve-grid { grid-template-columns: 1fr; }
+}

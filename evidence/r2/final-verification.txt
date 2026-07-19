@@ -1,0 +1,50 @@
+printf '\n=== R2 FINAL VERIFICATION ===\n'; pwd; node prototype/tests/run-tests.mjs; git diff --check; printf '%s\n' 'Boundary checks:'; rg -n 'NON-OFFICIAL|not a claim of jointly feasible control|Level-2: you monitor' p
+rototype/index.html prototype/README.md; printf '%s\n' 'Dependency/flat-render checks:'; if rg -n 'linear-gradient|radial-gradient|border-radius' prototype/styles.css; then printf '%s\n' 'FAIL: non-flat CSS found'; else
+printf '%s\n' 'PASS: no gradients or rounded primitives'; fi; printf '%s\n' 'FINAL VERIFICATION PASS'; tmux wait-for -S design-r2-done-2
+
+design master ? ❯ printf '\n=== R2 FINAL VERIFICATION ===\n'; pwd; node prototype/tests/run-tests.mjs; git diff --check; printf '%s\n' 'Boundary checks:'; rg -n 'NON-OFFICIAL|not a claim of jointly feasible control|Level
+-2: you monitor' prototype/index.html prototype/README.md; printf '%s\n' 'Dependency/flat-render checks:'; if rg -n 'linear-gradient|radial-gradient|border-radius' prototype/styles.css; then printf '%s\n' 'FAIL: non-flat
+ CSS found'; else printf '%s\n' 'PASS: no gradients or rounded primitives'; fi; printf '%s\n' 'FINAL VERIFICATION PASS'; tmux wait-for -S design-r2-done-2
+
+=== R2 FINAL VERIFICATION ===
+/home/vhpnk/Work/comma-leaderboard/design
+prototype engine tests: pass
+artifact contract tests: pass
+Boundary checks:
+prototype/README.md
+28:The proxy evaluator is **NON-OFFICIAL**. It is a local behavioral self-check only,
+
+prototype/index.html
+13:        <p class="resp">Level-2: you monitor the road and are ready to intervene.</p>
+19:        <p class="boundary">Confidence, reserve, and urgency are independent signals—not a claim of jointly feasible control.</p>
+96:        <h2>NON-OFFICIAL LOCAL PROXY EVALUATOR</h2>
+Dependency/flat-render checks:
+PASS: no gradients or rounded primitives
+FINAL VERIFICATION PASS
+
+design master ? ❯ printf '\n=== R2 FINAL VERIFICATION ===\n'; pwd; node --check prototype/prototype_engine.js; node --check prototype/ui.js; node prototype/tests/run-tests.mjs; git diff --check; rg -n 'NON-OFFICIAL|not a
+ claim of jointly feasible control|Level-2: you monitor' prototype/index.html prototype/README.md; if rg -n 'linear-gradient|radial-gradient|border-radius' prototype/styles.css; then printf '%s\n' 'FAIL: non-flat CSS fou
+nd'; else printf '%s\n' 'PASS: no gradients or rounded primitives'; fi; printf '%s\n' 'FINAL VERIFICATION PASS'; tmux wait-for -S design-r2-done-3
+
+=== R2 FINAL VERIFICATION ===
+/home/vhpnk/Work/comma-leaderboard/design
+prototype engine tests: pass
+artifact contract tests: pass
+prototype/README.md
+28:The proxy evaluator is **NON-OFFICIAL**. It is a local behavioral self-check only,
+
+prototype/index.html
+13:        <p class="resp">Level-2: you monitor the road and are ready to intervene.</p>
+19:        <p class="boundary">Confidence, reserve, and urgency are independent signals—not a claim of jointly feasible control.</p>
+96:        <h2>NON-OFFICIAL LOCAL PROXY EVALUATOR</h2>
+PASS: no gradients or rounded primitives
+FINAL VERIFICATION PASS
+
+
+
+
+
+
+
+
+
