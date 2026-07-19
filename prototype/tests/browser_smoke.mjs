@@ -25,6 +25,11 @@ const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 const startServer = () => {
   const server = createServer(async (req, res) => {
     const requestPath = decodeURIComponent((req.url || "/").split("?")[0] || "/");
+    if (requestPath === "/favicon.ico") {
+      res.writeHead(204);
+      res.end();
+      return;
+    }
     const cleaned = path.normalize(requestPath).replace(/^\/+/, "");
     const target = path.join(rootDir, cleaned || "index.html");
     if (!path.relative(rootDir, target).startsWith("..")) {
@@ -53,10 +58,11 @@ const startServer = () => {
 
 const pickWsEndpoint = async (port) => {
   for (let i = 0; i < 60; i += 1) {
-    const res = await fetch(`http://127.0.0.1:${port}/json/version`).catch(() => null);
+    const res = await fetch(`http://127.0.0.1:${port}/json/list`).catch(() => null);
     if (res && res.ok) {
-      const data = await res.json();
-      if (data.webSocketDebuggerUrl) return data.webSocketDebuggerUrl;
+      const targets = await res.json();
+      const page = targets.find((target) => target.type === "page" && target.webSocketDebuggerUrl);
+      if (page) return page.webSocketDebuggerUrl;
     }
     await sleep(100);
   }
@@ -69,6 +75,10 @@ class CdpClient {
     this.pending = new Map();
     this.listeners = new Map();
     this.socket = new WebSocket(wsUrl);
+    this.connected = new Promise((resolve, reject) => {
+      this.socket.onopen = resolve;
+      this.socket.onerror = () => reject(new Error("chromium websocket connection failed"));
+    });
 
     this.socket.onmessage = (event) => {
       const msg = JSON.parse(event.data);
@@ -85,7 +95,7 @@ class CdpClient {
   }
 
   send(method, params = {}) {
-    return new Promise((resolve, reject) => {
+    return this.connected.then(() => new Promise((resolve, reject) => {
       const id = this.nextId++;
       const timer = setTimeout(() => {
         this.pending.delete(id);
@@ -102,7 +112,7 @@ class CdpClient {
         },
       });
       this.socket.send(JSON.stringify({ id, method, params }));
-    });
+    }));
   }
 
   on(method, callback) {
@@ -130,7 +140,7 @@ const evaluate = async (cdp, expression) => {
     awaitPromise: true,
   });
   if (out.exceptionDetails) {
-    throw new Error(`runtime exception: ${out.exceptionDetails.text}`);
+    throw new Error(`runtime exception: ${JSON.stringify(out.exceptionDetails)}`);
   }
   return out.result?.value;
 };
@@ -176,7 +186,12 @@ const runViewport = async (cdp, url, width, height, requireContrast) => {
   const clearException = cdp.on("Runtime.exceptionThrown", (params) => {
     runtimeExceptions.push(
       params.exceptionDetails?.exception?.description ||
-      params.exceptionDetails?.text ||
+      [
+        params.exceptionDetails?.text,
+        params.exceptionDetails?.url,
+        params.exceptionDetails?.lineNumber == null ? "" : `line ${params.exceptionDetails.lineNumber + 1}`,
+        params.exceptionDetails?.columnNumber == null ? "" : `column ${params.exceptionDetails.columnNumber + 1}`,
+      ].filter(Boolean).join(" at ") ||
       "runtime-exception",
     );
   });
@@ -200,12 +215,15 @@ const runViewport = async (cdp, url, width, height, requireContrast) => {
       + "confidenceAria: document.getElementById('confidence').getAttribute('aria-valuetext'),"
       + "confidenceNow: document.getElementById('confidence').getAttribute('aria-valuenow'),"
       + "urgencyAria: document.getElementById('urgency').getAttribute('aria-valuetext'),"
+      + "urgencyNow: document.getElementById('urgency').getAttribute('aria-valuenow'),"
       + "boundary: document.querySelector('.boundary').textContent || '',"
-      + "state: document.getElementById('state').textContent || ''"
+      + "state: document.getElementById('reserveState').textContent || ''"
       + "}))()",
   );
   assert.ok(typeof baseline.confidenceAria === "string" && baseline.confidenceAria.length > 0);
   assert.ok(typeof baseline.confidenceNow === "string");
+  assert.match(baseline.urgencyAria, /^\d+ percent$/);
+  assert.ok(typeof baseline.urgencyNow === "string");
   assert.ok(/independent/i.test(baseline.boundary));
 
   await evaluate(
@@ -218,7 +236,7 @@ const runViewport = async (cdp, url, width, height, requireContrast) => {
     "(() => ({"
       + "conf: document.getElementById('confidence').getAttribute('aria-valuetext'),"
       + "urg: document.getElementById('urgency').getAttribute('aria-valuetext'),"
-      + "state: document.getElementById('state').textContent || ''"
+      + "state: document.getElementById('reserveState').textContent || ''"
       + "}))()",
   );
   assert.equal(stale.conf, "unavailable");
@@ -232,42 +250,50 @@ const runViewport = async (cdp, url, width, height, requireContrast) => {
 
   await evaluate(
     cdp,
-    "(() => { document.getElementById('brakeInput').value='1.4'; document.getElementById('brakeInput').dispatchEvent(new Event('input',{bubbles:true})); return true; })()",
+    "(() => { const el=document.getElementById('brakeAvail'); el.checked=false; el.dispatchEvent(new Event('input',{bubbles:true})); return true; })()",
   );
   await evaluate(
     cdp,
-    "(() => { document.getElementById('accelInput').value='-0.4'; document.getElementById('accelInput').dispatchEvent(new Event('input',{bubbles:true})); return true; })()",
+    "(() => { const el=document.getElementById('accelAvail'); el.checked=false; el.dispatchEvent(new Event('input',{bubbles:true})); return true; })()",
   );
-  const overflow = await evaluate(
+  const unavailable = await evaluate(
     cdp,
     "(()=>({"
-      + "brakeUnavailable: document.getElementById('brake').className.includes('unavailable-state'),"
-      + "accelUnavailable: document.getElementById('accel').className.includes('unavailable-state')"
+      + "brakeUnavailable: document.querySelector('#brake .rail-track').classList.contains('unavailable-state'),"
+      + "accelUnavailable: document.querySelector('#accel .rail-track').classList.contains('unavailable-state')"
       + "}))()",
   );
-  assert.equal(overflow.brakeUnavailable, true);
-  assert.equal(overflow.accelUnavailable, true);
+  assert.equal(unavailable.brakeUnavailable, true);
+  assert.equal(unavailable.accelUnavailable, true);
+
+  const layout = await evaluate(
+    cdp,
+    "(()=>({scrollWidth:document.documentElement.scrollWidth,clientWidth:document.documentElement.clientWidth}))()",
+  );
+  assert.ok(
+    layout.scrollWidth <= layout.clientWidth,
+    `${width}x${height} horizontal overflow: ${layout.scrollWidth} > ${layout.clientWidth}`,
+  );
 
   await evaluate(cdp, "document.getElementById('runScenario').click()");
   await sleep(220);
   const scenarioState = await evaluate(cdp, "document.getElementById('scenarioState').textContent");
   assert.match(scenarioState, /Step 1 of|Manual exploration|stability/);
 
-  await evaluate(cdp, "document.body.focus()");
-  await cdp.send("Input.dispatchKeyEvent", {
-    type: "keyDown",
-    windowsVirtualKeyCode: 9,
-    code: "Tab",
-    key: "Tab",
-  });
-  await cdp.send("Input.dispatchKeyEvent", {
-    type: "keyUp",
-    windowsVirtualKeyCode: 9,
-    code: "Tab",
-    key: "Tab",
-  });
-  const focus = await evaluate(cdp, "document.activeElement && document.activeElement.id");
-  assert.ok(!!focus);
+  await evaluate(cdp, "document.querySelector('details').open=true; document.activeElement && document.activeElement.blur()");
+  const focusSequence = [];
+  for (let i = 0; i < 3; i += 1) {
+    await cdp.send("Input.dispatchKeyEvent", {
+      type: "keyDown", windowsVirtualKeyCode: 9, code: "Tab", key: "Tab",
+    });
+    await cdp.send("Input.dispatchKeyEvent", {
+      type: "keyUp", windowsVirtualKeyCode: 9, code: "Tab", key: "Tab",
+    });
+    focusSequence.push(await evaluate(cdp, "document.activeElement && (document.activeElement.id || document.activeElement.tagName)"));
+  }
+  assert.equal(focusSequence.length, 3);
+  assert.ok(focusSequence.every(Boolean));
+  assert.equal(new Set(focusSequence).size, 3);
 
   if (requireContrast) {
     const tokens = await evaluate(

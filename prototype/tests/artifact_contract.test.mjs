@@ -10,6 +10,8 @@ const [html, css, readme, ui] = await Promise.all([
 ]);
 
 assert.match(html, /Level-2: you monitor the road and are ready to intervene\./);
+assert.match(html, /<title>Independent, unsubmitted concept —/);
+assert.match(html, /<h1>Independent, unsubmitted concept —/);
 assert.match(html, /independent signals—not a claim of jointly feasible control/);
 assert.match(html, /NON-OFFICIAL LOCAL PROXY EVALUATOR/);
 assert.match(html, /aria-live="polite"/);
@@ -17,6 +19,11 @@ assert.doesNotMatch(html, /id="steerHeadInput"/, "redundant steering-headroom co
 assert.match(html, /LOW \/ RISING \/ IMMINENT/, "risk cursor uses categorical semantics");
 assert.match(html, /Openpilot longitudinal control active/, "stock ACC availability is explicit");
 assert.match(ui, /setInterval\(\(\) =>[\s\S]*paint\(activeFrame\)/, "passive repaint lets fresh state become visibly stale");
+assert.match(
+  ui,
+  /ids\.urgency\.bar\.classList\.toggle\("unavailable-state", !urgencyAvailable\)[\s\S]*ids\.urgency\.bar\.setAttribute\("aria-valuetext"[\s\S]*ids\.urgency\.bar\.setAttribute\("aria-valuenow"[\s\S]*ids\.urgency\.bar\.removeAttribute\("aria-valuenow"/,
+  "urgency classes and ARIA attributes target the mapped bar element",
+);
 assert.match(
   ui,
   /scenarioFrameFromStep\(step,[\s\S]*brakeAvailable: ids\.brakeAvail\.checked,[\s\S]*accelAvailable: ids\.accelAvail\.checked,[\s\S]*openpilotLongitudinalControl: ids\.longControlActive\.checked,[\s\S]*longActive: ids\.longControlActive\.checked/,
