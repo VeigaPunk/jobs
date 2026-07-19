@@ -3,13 +3,15 @@ import {
   sanitizeFrame,
   deterministicSteeringLimitScenario,
   scenarioFrameFromStep,
+  confidenceClassFromScore,
+  riskCursorPosition,
+  steeringHeadroomFromTorque,
 } from "./prototype_engine.js";
 
 const ids = {
   confidence: {
     rail: document.getElementById("confidence"),
     fill: document.getElementById("confidenceFill"),
-    text: document.getElementById("confidenceFillText"),
     label: document.getElementById("confidenceLabel"),
   },
   urgency: {
@@ -27,7 +29,6 @@ const ids = {
   confidenceOutput: document.getElementById("confidenceOutput"),
   steerReqInput: document.getElementById("steerRequestInput"),
   steerReqOutput: document.getElementById("steerReqOutput"),
-  steerHeadInput: document.getElementById("steerHeadInput"),
   steerHeadOutput: document.getElementById("steerHeadOutput"),
   brakeInput: document.getElementById("brakeInput"),
   brakeOutput: document.getElementById("brakeOutput"),
@@ -38,6 +39,7 @@ const ids = {
   steerAvail: document.getElementById("steerAvail"),
   brakeAvail: document.getElementById("brakeAvail"),
   accelAvail: document.getElementById("accelAvail"),
+  longControlActive: document.getElementById("longControlActive"),
   steerSat: document.getElementById("steerSat"),
   steerPressed: document.getElementById("steerPressed"),
   dataFresh: document.getElementById("dataFresh"),
@@ -73,9 +75,10 @@ const setFillState = (el, pct, available, marker) => {
 
 const deriveUiFrameFromInputs = () => {
   const age = Number(ids.ageInput.value);
+  const timestamp = Number.isFinite(age) ? Date.now() - age : Date.now();
   return {
     confidenceScore: Number(ids.confidenceInput.value),
-    steeringHeadroom: Number(ids.steerHeadInput.value),
+    steeringHeadroom: steeringHeadroomFromTorque(Number(ids.steerReqInput.value), ids.steerSat.checked),
     steeringAvailable: ids.steerAvail.checked,
     steeringSaturated: ids.steerSat.checked,
     brakeHeadroom: Number(ids.brakeInput.value),
@@ -84,21 +87,33 @@ const deriveUiFrameFromInputs = () => {
     accelHeadroom: Number(ids.accelInput.value),
     accelAvailable: ids.accelAvail.checked,
     accelSaturated: false,
+    openpilotLongitudinalControl: ids.longControlActive.checked,
+    longActive: ids.longControlActive.checked,
     interventionUrgency: Number(ids.urgencyInput.value),
     steeringPressed: ids.steerPressed.checked,
-    timestampMs: ids.dataFresh.checked ? Date.now() - age : Date.now() - 5000,
+    timestampMs: ids.dataFresh.checked ? timestamp : NaN,
   };
+};
+
+const confidenceValueToAria = (cls) => {
+  if (cls === "IMMINENT") return "3";
+  if (cls === "RISING") return "2";
+  if (cls === "LOW") return "1";
+  return "0";
 };
 
 const paint = (frame) => {
   const d = sanitizeFrame(frame);
 
   ids.confidence.label.textContent = d.confidenceClass;
-  ids.confidence.text.textContent = d.confidenceScore === null ? "n/a" : `${Math.round(d.confidenceScore * 100)}%`;
-  ids.confidence.fill.style.width = `${Math.round((d.confidenceScore || 0) * 100)}%`;
-  ids.confidence.rail.setAttribute("aria-valuetext", d.confidenceScore === null ? "unavailable" : `${Math.round(d.confidenceScore * 100)} percent`);
-  if (d.confidenceScore === null) ids.confidence.rail.removeAttribute("aria-valuenow");
-  else ids.confidence.rail.setAttribute("aria-valuenow", String(Math.round(d.confidenceScore * 100)));
+  const cursorPosition = riskCursorPosition(d.confidenceScore);
+  ids.confidence.fill.style.left = cursorPosition ? `${(cursorPosition * 2 - 1) * 100 / 6}%` : "0";
+  ids.confidence.fill.hidden = cursorPosition === 0;
+  ids.confidence.rail.setAttribute("aria-valuemin", "1");
+  ids.confidence.rail.setAttribute("aria-valuemax", "3");
+  ids.confidence.rail.setAttribute("aria-valuetext", d.confidenceScore === null ? "unavailable" : `intervention risk ${d.confidenceClass}`);
+  if (cursorPosition) ids.confidence.rail.setAttribute("aria-valuenow", confidenceValueToAria(d.confidenceClass));
+  else ids.confidence.rail.removeAttribute("aria-valuenow");
   ids.confidence.rail.className = "rail";
   ids.confidence.rail.classList.add(d.confidenceClass);
 
@@ -124,16 +139,16 @@ const paint = (frame) => {
   ids.state.textContent = states.length ? `Explicit states: ${states.join(", ")}` : "All channels available";
 
   ids.urgencyHint.textContent = d.stale
-    ? "Intervention urgency is independent but suppressed by staleness where applicable."
+    ? "Intervention urgency is independent but suppressed by staleness and invalid timestamp handling where applicable."
     : "Urgency channel is independent of confidence and actuator channels.";
 };
 
 function syncReadouts() {
-  ids.confidenceOutput.textContent = ids.confidenceInput.value;
+  ids.confidenceOutput.textContent = confidenceClassFromScore(Number(ids.confidenceInput.value));
   ids.steerReqOutput.textContent = Number(ids.steerReqInput.value).toFixed(2);
   const req = Number(ids.steerReqInput.value);
-  ids.steerHeadInput.value = (1 - req).toFixed(2);
-  ids.steerHeadOutput.textContent = ids.steerHeadInput.value;
+  const headroom = steeringHeadroomFromTorque(req, ids.steerSat.checked);
+  ids.steerHeadOutput.textContent = headroom === null ? "unavailable" : headroom.toFixed(2);
   ids.brakeOutput.textContent = ids.brakeInput.value;
   ids.accelOutput.textContent = ids.accelInput.value;
   ids.urgencyOutput.textContent = ids.urgencyInput.value;
@@ -141,13 +156,27 @@ function syncReadouts() {
 }
 
 let scenarioHandle = null;
+let activeFrame = deriveUiFrameFromInputs();
 
 ids.steerReqInput.addEventListener("input", syncReadouts);
-[ids.confidenceInput, ids.steerHeadInput, ids.brakeInput, ids.accelInput, ids.urgencyInput,
-ids.steerAvail, ids.brakeAvail, ids.accelAvail, ids.steerSat, ids.steerPressed, ids.dataFresh, ids.ageInput].forEach((el) =>
+[
+  ids.confidenceInput,
+  ids.brakeInput,
+  ids.accelInput,
+  ids.urgencyInput,
+  ids.steerAvail,
+  ids.brakeAvail,
+  ids.accelAvail,
+  ids.longControlActive,
+  ids.steerSat,
+  ids.steerPressed,
+  ids.dataFresh,
+  ids.ageInput,
+].forEach((el) =>
   el.addEventListener("input", () => {
     syncReadouts();
-    paint(deriveUiFrameFromInputs());
+    activeFrame = deriveUiFrameFromInputs();
+    paint(activeFrame);
   })
 );
 
@@ -166,17 +195,21 @@ ids.runScenario.addEventListener("click", () => {
     const next = scenarioFrameFromStep(step, {
       confidenceScore: Number(ids.confidenceInput.value),
       brakeHeadroom: Number(ids.brakeInput.value),
+      brakeAvailable: ids.brakeAvail.checked,
       accelHeadroom: Number(ids.accelInput.value),
+      accelAvailable: ids.accelAvail.checked,
       interventionUrgency: Number(ids.urgencyInput.value),
       steeringPressed: ids.steerPressed.checked,
+      openpilotLongitudinalControl: ids.longControlActive.checked,
+      longActive: ids.longControlActive.checked,
       timestampMs: Date.now(),
     });
     ids.scenarioState.textContent = `Step ${index + 1} of ${deterministicSteeringLimitScenario.length}: ${step.label}`;
     ids.confidenceInput.value = String(next.confidenceScore);
-    ids.steerHeadInput.value = String(next.steeringHeadroom.toFixed(2));
     ids.steerReqInput.value = String(step.steeringRequest.toFixed(2));
     ids.steerSat.checked = !!next.steeringSaturated;
     syncReadouts();
+    activeFrame = next;
     paint(next);
     index += 1;
   };
@@ -191,17 +224,22 @@ ids.seedScenario.addEventListener("click", () => {
     scenarioHandle = null;
     ids.runScenario.disabled = false;
   }
-  ids.confidenceInput.value = "0.78";
+  ids.confidenceInput.value = "0.005";
   ids.steerReqInput.value = "0.20";
-  ids.steerHeadInput.value = "0.80";
   ids.brakeInput.value = "0.62";
   ids.accelInput.value = "0.55";
   ids.urgencyInput.value = "0.40";
   ids.steerSat.checked = false;
   ids.scenarioState.textContent = "Manual exploration";
   syncReadouts();
-  paint(deriveUiFrameFromInputs());
+  activeFrame = deriveUiFrameFromInputs();
+  paint(activeFrame);
 });
 
+setInterval(() => {
+  if (!activeFrame) return;
+  paint(activeFrame);
+}, 200);
+
 syncReadouts();
-paint(deriveUiFrameFromInputs());
+paint(activeFrame);

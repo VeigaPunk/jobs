@@ -20,13 +20,14 @@
       </section>
 
       <section class="card">
-        <h2>Continuous confidence</h2>
-        <div id="confidence" class="rail" role="meter" aria-label="driving confidence" aria-valuemin="0" aria-valuemax="100">
-          <div class="rail-label">Driving confidence: <span id="confidenceLabel">unknown</span></div>
-          <div class="rail-track">
-            <div id="confidenceFill" class="rail-fill"></div>
-            <div id="confidenceFillText" class="rail-text"></div>
+        <h2>Intervention-likelihood cursor</h2>
+        <div id="confidence" class="rail" role="meter" aria-label="intervention risk class" aria-valuemin="1" aria-valuemax="3">
+          <div class="rail-label">Intervention risk: <span id="confidenceLabel">unknown</span></div>
+          <div class="rail-track risk-track">
+            <div id="confidenceFill" class="risk-cursor"></div>
           </div>
+          <div class="risk-scale" aria-hidden="true"><span>LOW</span><span>RISING</span><span>IMMINENT</span></div>
+          <p class="rail-meta">LOW / RISING / IMMINENT are pinned to canonical classifier boundaries; no percentage is implied.</p>
         </div>
       </section>
 
@@ -72,15 +73,16 @@
         <p id="scenarioState" class="status" aria-live="polite">Manual exploration</p>
         <details>
         <summary>Prototype controls</summary>
-        <label>Confidence score <output id="confidenceOutput">0.78</output><input id="confidenceInput" type="range" min="0" max="1" step="0.01" value="0.78"></label>
-        <label>Steering request (simulated) <output id="steerReqOutput">0.20</output><input id="steerRequestInput" type="range" min="0" max="1" step="0.01" value="0.20"></label>
-        <label>Steering headroom <output id="steerHeadOutput">0.80</output><input id="steerHeadInput" type="range" min="0" max="1" step="0.01" value="0.80"></label>
+        <label>Classifier score fixture: <output id="confidenceOutput">LOW</output><input id="confidenceInput" type="range" min="0" max="0.1" step="0.00001" value="0.005"></label>
+        <label>Signed normalized steering torque <output id="steerReqOutput">0.20</output><input id="steerRequestInput" type="range" min="-1" max="1" step="0.01" value="0.20"></label>
+        <p>Derived steering headroom: <output id="steerHeadOutput">0.80</output></p>
         <label>Brake headroom <output id="brakeOutput">0.62</output><input id="brakeInput" type="range" min="0" max="1" step="0.01" value="0.62"></label>
         <label>Accel headroom <output id="accelOutput">0.55</output><input id="accelInput" type="range" min="0" max="1" step="0.01" value="0.55"></label>
         <label>Intervention urgency <output id="urgencyOutput">0.40</output><input id="urgencyInput" type="range" min="0" max="1" step="0.01" value="0.40"></label>
         <label><input id="steerAvail" type="checkbox" checked> Steering available</label>
         <label><input id="brakeAvail" type="checkbox" checked> Brake available</label>
         <label><input id="accelAvail" type="checkbox" checked> Accel available</label>
+        <label><input id="longControlActive" type="checkbox" checked> Openpilot longitudinal control active</label>
         <label><input id="steerSat" type="checkbox"> Steering saturated (force zero)</label>
         <label><input id="steerPressed" type="checkbox"> Steering pressed (driver override)</label>
         <label><input id="dataFresh" type="checkbox" checked> Fresh signal</label>

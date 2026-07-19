@@ -7,6 +7,13 @@ This folder contains a dependency-free prototype for the design frontier.
 - `ui.js` renders flat primitive visuals and interactivity.
 - `non_official_proxy_evaluator.js` is a clearly labeled local evaluator (not official).
 
+The classifier score is intervention risk, not a confidence percentage. Its
+cursor is pinned to `LOW`, `RISING`, and `IMMINENT` using the canonical
+`0.01165` and `0.06157` boundaries documented in `../RECON.md`. Capability
+inputs follow `../MODEL.md`: signed normalized torque uses absolute demand,
+driver override is distinct from saturation, and stock-ACC longitudinal reserve
+is unavailable.
+
 ## Run locally
 
 From this directory:

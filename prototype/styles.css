@@ -17,7 +17,7 @@ body { margin: 0; background: #edf0f4; color: var(--ink); font-family: "Trebuche
 .rail-track, .urgency { border: 2px solid #2f3b4b; background: var(--rail-bg); height: 34px; position: relative; overflow: hidden; }
 .rail-fill, .urgency-fill { height: 100%; width: 0%; transition: width 140ms linear; }
 .rail-fill { background: #4b9ed5; }
-.rail-text, .urgency-text { position: absolute; right: 8px; top: 8px; font-weight: 700; color: #101b2b; }
+.urgency-text { position: absolute; right: 8px; top: 8px; font-weight: 700; color: #101b2b; }
 .rail { margin-bottom: 0.5rem; }
 .rail-label { margin-bottom: 0.3rem; font-weight: 700; }
 .reserve-grid { display: grid; gap: 0.6rem; grid-template-columns: 1fr 1fr 1fr; }
@@ -32,9 +32,14 @@ label { display: block; margin: 0.35rem 0; }
 button { padding: 0.35rem 0.8rem; font-weight: 700; background: #223448; color: #f8fafb; border: 2px solid #223448; }
 button:hover { background: #172538; }
 .unavailable-state { border-style: dashed; background: var(--dash); }
-.red .rail-fill { background: #c33e3e; }
-.yellow .rail-fill { background: #c9a100; }
-.green .rail-fill { background: #2a9b4b; }
+.risk-track { overflow: visible; }
+.risk-cursor { position: absolute; top: -5px; width: 8px; height: 40px; background: #172538; border: 2px solid #fff; transform: translateX(-50%); }
+.LOW .risk-cursor { background: #2a9b4b; }
+.RISING .risk-cursor { background: #9f7d00; }
+.IMMINENT .risk-cursor { background: #b53030; }
+.risk-scale { display: grid; grid-template-columns: repeat(3, 1fr); font-weight: 700; font-size: 0.8rem; text-align: center; }
+.risk-scale span:first-child { text-align: left; }
+.risk-scale span:last-child { text-align: right; }
 .boundary { border-left: 5px solid #43566c; padding-left: 0.6rem; font-weight: 700; }
 .proxy-note { border-style: dashed; }
 .proxy-note h2 { font-size: 1rem; letter-spacing: 0.04em; }

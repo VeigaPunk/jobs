@@ -1,0 +1,61 @@
+{
+  "date": "2026-07-19",
+  "scope": "prototype",
+  "official_sources": [
+    "https://comma.ai/leaderboard#design_challenge",
+    "https://raw.githubusercontent.com/commaai/jobs/refs/heads/master/design.md"
+  ],
+  "official_evaluator": "not published in observed sources",
+  "external_action_recorded": false,
+  "moves": [
+    {
+      "move_id": "M007",
+      "source_prefix": "cdx",
+      "axis": "comprehension",
+      "claim": "Express intervention risk as categorical cursor classes pinned to canonical boundaries.",
+      "verdict": "accept",
+      "evidence": "prototype/prototype_engine.js; prototype/ui.js; prototype/index.html"
+    },
+    {
+      "move_id": "M008",
+      "source_prefix": "ccs",
+      "axis": "safety semantics",
+      "claim": "Reject future/invalid timestamps, suppress stale data channels, and keep reserve availability explicit.",
+      "verdict": "accept",
+      "evidence": "prototype/prototype_engine.js; prototype/tests/prototype_engine.test.mjs"
+    },
+    {
+      "move_id": "M009",
+      "source_prefix": "ccs",
+      "axis": "technical feasibility",
+      "claim": "Separate stock-ACC longitudinal authority from steering and gate brake/accel reserves through it.",
+      "verdict": "accept",
+      "evidence": "prototype/prototype_engine.js; prototype/ui.js; prototype/tests/prototype_engine.test.mjs"
+    }
+  ],
+  "source_map_serialization": "[{\"move_id\":\"M007\",\"source_prefix\":\"cdx\"},{\"move_id\":\"M008\",\"source_prefix\":\"ccs\"},{\"move_id\":\"M009\",\"source_prefix\":\"ccs\"}]",
+  "evidence_audit": {
+    "with_role_required_evidence_form": 3,
+    "without_required_evidence_form": 0,
+    "dropped": 0,
+    "spoof_flagged": 0
+  },
+  "artifacts_sha256": {
+    "RECON.md": "f7f6cfc35cba3e5a4088f6eebc657f70cbb0ca86e321a511be2afedc19d13240",
+    "MODEL.md": "1b60439fc7db79d8e39d3458348d3450fbcfc2c4d14331c9d9278e84f2dec1a8",
+    "prototype/README.md": "9999b2fb95677b6988a4620206a08f1a1b75220dede08c1c21d2488f59654016",
+    "prototype/index.html": "a1aa82ef4ca257b111a2b5a492477583fc7f6ed3aacfaa100d3cd36523f808e9",
+    "prototype/non_official_proxy_evaluator.js": "22a7edf217f1bdce388940030ac817fe899bf40b3d0fc57d9d136a02f57f3440",
+    "prototype/prototype_engine.js": "a41ebeb71a1f89bb9ba0d0c2b99a16a18140c2b6168b294803f98eeb06408b0c",
+    "prototype/styles.css": "9c1acf769718fb8378dff2fa5e711a5d7ace47ca77eb2d6d8a1677c924b40b02",
+    "prototype/tests/artifact_contract.test.mjs": "13ab873254cc3246e6e310bab5b183ca509d9e23d59404953e449d054cda8fa3",
+    "prototype/tests/prototype_engine.test.mjs": "f706263aa167186cf8ab14f4a83e13bfcdf0fd50bfd8029ddeb89d96a49ad5f0",
+    "prototype/ui.js": "f613112d8a8cca6741927ff5ae3a6d4996730fbf1dbf06c6c0abd8ffc967dbfd"
+  },
+  "artifact_verification": "evidence/r3/final-verification.txt; evidence/r3/reviewer-regression-final.txt; evidence/r3/red-green.txt",
+  "reproduce_audit_hash": "python -c 'import hashlib,json; d=json.load(open(\"evidence/r3/ledger.json\")); print(hashlib.sha256(d[\"source_map_serialization\"].encode()).hexdigest())'",
+  "reproduce_manifest_hash": "python -c 'import hashlib,json; d=json.load(open(\"evidence/r3/ledger.json\")); b=json.dumps({\"moves\":d[\"moves\"],\"evidence_audit\":d[\"evidence_audit\"]},sort_keys=True,separators=(\",\",\":\")).encode(); print(hashlib.sha256(b).hexdigest())'",
+  "reproduce_artifact_hashes": "sha256sum RECON.md MODEL.md prototype/README.md prototype/index.html prototype/non_official_proxy_evaluator.js prototype/prototype_engine.js prototype/styles.css prototype/tests/artifact_contract.test.mjs prototype/tests/prototype_engine.test.mjs prototype/ui.js",
+  "audit_hash": "777c2f5d916b3cd20b01e959f16578ec44d690ca42d1f8d3923bb172ab7ecfd7",
+  "manifest_hash": "65379a133fdcf16c8af06ef0035a55384ae4e7a299656303d7926c67bc723941"
+}
