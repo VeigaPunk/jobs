@@ -1,0 +1,23 @@
+R3 REVIEWER REGRESSION VERIFICATION — 2026-07-19
+
+command: node --check prototype/prototype_engine.js && node --check prototype/ui.js && node prototype/tests/run-tests.mjs && git diff --check
+exit: 0
+output:
+prototype engine tests: pass
+artifact contract tests: pass
+
+Verified implementation references:
+prototype/prototype_engine.js:102:  const openpilotLongitudinalControl = opts.openpilotLongitudinalControl === true;
+prototype/prototype_engine.js:103:  const longActive = opts.longActive === true;
+prototype/prototype_engine.js:111:    brakeAvailable: longitudinalAvailable && opts.brakeAvailable === true,
+prototype/prototype_engine.js:114:    accelAvailable: longitudinalAvailable && opts.accelAvailable === true,
+prototype/ui.js:90:    openpilotLongitudinalControl: ids.longControlActive.checked,
+prototype/ui.js:91:    longActive: ids.longControlActive.checked,
+prototype/ui.js:203:      openpilotLongitudinalControl: ids.longControlActive.checked,
+prototype/ui.js:204:      longActive: ids.longControlActive.checked,
+
+The default-off assertions and explicit-authority positive case pass in
+prototype/tests/prototype_engine.test.mjs:111-128. This is the green counterpart
+to REVIEWER REGRESSION RED in evidence/r3/red-green.txt.
+
+R3 REVIEWER REGRESSION VERIFICATION PASS

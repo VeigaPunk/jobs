@@ -50,12 +50,16 @@
     "prototype/styles.css": "9c1acf769718fb8378dff2fa5e711a5d7ace47ca77eb2d6d8a1677c924b40b02",
     "prototype/tests/artifact_contract.test.mjs": "13ab873254cc3246e6e310bab5b183ca509d9e23d59404953e449d054cda8fa3",
     "prototype/tests/prototype_engine.test.mjs": "f706263aa167186cf8ab14f4a83e13bfcdf0fd50bfd8029ddeb89d96a49ad5f0",
-    "prototype/ui.js": "f613112d8a8cca6741927ff5ae3a6d4996730fbf1dbf06c6c0abd8ffc967dbfd"
+    "prototype/ui.js": "f613112d8a8cca6741927ff5ae3a6d4996730fbf1dbf06c6c0abd8ffc967dbfd",
+    "evidence/r3/final-verification.txt": "275340868bdca065540a98b944016885809dc12f06982c9e89caa34f63ce6f0b",
+    "evidence/r3/red-green.txt": "49ca08807603945e099bcce4633022abc0cc7f3a2fb2f5e21fc59b40607bf5b8",
+    "evidence/r3/reviewer-regression-final.txt": "2797fe82b936601e6950eb554e1b46593cb3f69b0aa202986bed99b390371ebe"
   },
+  "artifact_hash_count": 13,
   "artifact_verification": "evidence/r3/final-verification.txt; evidence/r3/reviewer-regression-final.txt; evidence/r3/red-green.txt",
   "reproduce_audit_hash": "python -c 'import hashlib,json; d=json.load(open(\"evidence/r3/ledger.json\")); print(hashlib.sha256(d[\"source_map_serialization\"].encode()).hexdigest())'",
   "reproduce_manifest_hash": "python -c 'import hashlib,json; d=json.load(open(\"evidence/r3/ledger.json\")); b=json.dumps({\"moves\":d[\"moves\"],\"evidence_audit\":d[\"evidence_audit\"]},sort_keys=True,separators=(\",\",\":\")).encode(); print(hashlib.sha256(b).hexdigest())'",
-  "reproduce_artifact_hashes": "sha256sum RECON.md MODEL.md prototype/README.md prototype/index.html prototype/non_official_proxy_evaluator.js prototype/prototype_engine.js prototype/styles.css prototype/tests/artifact_contract.test.mjs prototype/tests/prototype_engine.test.mjs prototype/ui.js",
+  "reproduce_artifact_hashes": "sha256sum RECON.md MODEL.md prototype/README.md prototype/index.html prototype/non_official_proxy_evaluator.js prototype/prototype_engine.js prototype/styles.css prototype/tests/artifact_contract.test.mjs prototype/tests/prototype_engine.test.mjs prototype/ui.js evidence/r3/final-verification.txt evidence/r3/red-green.txt evidence/r3/reviewer-regression-final.txt",
   "audit_hash": "777c2f5d916b3cd20b01e959f16578ec44d690ca42d1f8d3923bb172ab7ecfd7",
   "manifest_hash": "65379a133fdcf16c8af06ef0035a55384ae4e7a299656303d7926c67bc723941"
 }

@@ -1,0 +1,69 @@
+RED 1
+command: node prototype/tests/run-tests.mjs
+exit: 1
+output:
+file:///home/vhpnk/Work/comma-leaderboard/design/prototype/tests/prototype_engine.test.mjs:7
+  riskCursorPosition,
+  ^^^^^^^^^^^^^^^^^^
+SyntaxError: The requested module '../prototype_engine.js' does not provide an export named 'riskCursorPosition'
+
+RED 2
+command: node prototype/tests/run-tests.mjs
+exit: 1
+output:
+AssertionError [ERR_ASSERTION]: out-of-range headroom 1.01 is rejected
+
+true !== false
+
+    at file:///home/vhpnk/Work/comma-leaderboard/design/prototype/tests/prototype_engine.test.mjs:81:10
+
+GREEN
+command: node prototype/tests/run-tests.mjs
+exit: 0
+output:
+prototype engine tests: pass
+artifact contract tests: pass
+
+Rationale: corrective contracts first exposed the missing class-pinned risk cursor
+and fail-open out-of-range capability input. Green covers canonical risk boundaries,
+stale and future timestamps, stock-ACC suppression, signed negative torque,
+distinct override/saturation states, passive stale repaint, and explicit non-official
+proxy checks without an aggregate score.
+
+REVIEWER REGRESSION RED
+command: node prototype/tests/run-tests.mjs
+exit: 1
+output:
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: scenario raw frame does not advertise brake reserve by default
+
+true !== false
+
+    at file:///home/vhpnk/Work/comma-leaderboard/design/prototype/tests/prototype_engine.test.mjs:114:8
+    at ModuleJob.run (node:internal/modules/esm/module_job:569:25)
+    at async node:internal/modules/esm/loader:650:26
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5) {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: true,
+  expected: false,
+  operator: 'strictEqual',
+  diff: 'simple'
+}
+
+Node.js v26.5.0
+
+REVIEWER REGRESSION GREEN
+command: node prototype/tests/run-tests.mjs
+exit: 0
+output:
+prototype engine tests: pass
+artifact contract tests: pass
+
+Rationale: scenario frames now default all longitudinal authority and reserve
+availability flags off. Only explicit openpilot-longitudinal, long-active, and
+per-channel availability inputs enable brake or acceleration reserve. Scenario
+playback propagates the corresponding UI checkbox states.

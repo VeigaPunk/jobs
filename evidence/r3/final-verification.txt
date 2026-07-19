@@ -1,0 +1,36 @@
+R3 FINAL VERIFICATION — 2026-07-19
+
+command:
+set -eu
+node --check prototype/prototype_engine.js
+node --check prototype/ui.js
+node --check prototype/non_official_proxy_evaluator.js
+node prototype/tests/run-tests.mjs
+git diff --check
+git diff --cached --check
+python -c 'import hashlib,json,pathlib; d=json.load(open("evidence/r3/ledger.json")); audit=hashlib.sha256(d["source_map_serialization"].encode()).hexdigest(); assert audit==d["audit_hash"], (audit,d["audit_hash"]); print("ledger audit hash: pass"); manifest=hashlib.sha256(json.dumps({"moves":d["moves"],"evidence_audit":d["evidence_audit"]},sort_keys=True,separators=(",",":")).encode()).hexdigest(); assert manifest==d["manifest_hash"], (manifest,d["manifest_hash"]); print("ledger manifest hash: pass"); expected=d["artifacts_sha256"]; actual={p:hashlib.sha256(pathlib.Path(p).read_bytes()).hexdigest() for p in expected}; assert actual==expected, {p:(expected[p],actual[p]) for p in expected if actual[p]!=expected[p]}; assert len(expected)==d["artifact_hash_count"]==13, (len(expected),d["artifact_hash_count"]); print(f"ledger artifact hashes: pass ({len(expected)} files)")'
+printf '%s\n' 'R3 FINAL VERIFICATION PASS'
+
+exit: 0
+output:
+prototype engine tests: pass
+artifact contract tests: pass
+ledger audit hash: pass
+ledger manifest hash: pass
+ledger artifact hashes: pass (13 files)
+R3 FINAL VERIFICATION PASS
+
+Current longitudinal-default contract:
+prototype/prototype_engine.js:102:  const openpilotLongitudinalControl = opts.openpilotLongitudinalControl === true;
+prototype/prototype_engine.js:103:  const longActive = opts.longActive === true;
+prototype/prototype_engine.js:111:    brakeAvailable: longitudinalAvailable && opts.brakeAvailable === true,
+prototype/prototype_engine.js:114:    accelAvailable: longitudinalAvailable && opts.accelAvailable === true,
+prototype/tests/prototype_engine.test.mjs:112:assert.equal(scenarioDefaultRaw.openpilotLongitudinalControl, false, "scenario defaults openpilot longitudinal control off");
+prototype/tests/prototype_engine.test.mjs:113:assert.equal(scenarioDefaultRaw.longActive, false, "scenario defaults longitudinal actuation off");
+prototype/tests/prototype_engine.test.mjs:114:assert.equal(scenarioDefaultRaw.brakeAvailable, false, "scenario raw frame does not advertise brake reserve by default");
+prototype/tests/prototype_engine.test.mjs:115:assert.equal(scenarioDefaultRaw.accelAvailable, false, "scenario raw frame does not advertise accel reserve by default");
+
+Ledger reproduction:
+audit_hash: 777c2f5d916b3cd20b01e959f16578ec44d690ca42d1f8d3923bb172ab7ecfd7
+manifest_hash: 65379a133fdcf16c8af06ef0035a55384ae4e7a299656303d7926c67bc723941
+artifact hashes: pass (all 13 evidence/r3/ledger.json artifacts match)
