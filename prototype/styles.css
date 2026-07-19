@@ -13,6 +13,7 @@ body { margin: 0; background: #edf0f4; color: var(--ink); font-family: "Trebuche
 .shell { width: min(920px, 100% - 2rem); margin: 1rem auto; display: grid; gap: 0.75rem; }
 .card { border: 2px solid #bfc8d4; background: #fbfcff; padding: 0.75rem; }
 .header h1 { margin: 0.2rem 0; }
+.status-line { margin: 0.25rem 0; font-size: 0.92rem; }
 .resp { margin: 0; font-weight: 600; }
 .rail-track, .urgency { border: 2px solid #2f3b4b; background: var(--rail-bg); height: 34px; position: relative; overflow: hidden; }
 .rail-fill, .urgency-fill { height: 100%; width: 0%; transition: width 140ms linear; }

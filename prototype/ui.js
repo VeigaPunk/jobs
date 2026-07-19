@@ -124,7 +124,7 @@ const paint = (frame) => {
   const urgencyAvailable = d.interventionUrgency !== null;
   ids.urgency.fill.style.width = `${Math.round((d.interventionUrgency || 0) * 100)}%`;
   ids.urgency.text.textContent = urgencyAvailable ? `${Math.round(d.interventionUrgency * 100)}%` : "n/a";
-  ids.urgency.classList.toggle("unavailable-state", !urgencyAvailable);
+  ids.urgency.bar.classList.toggle("unavailable-state", !urgencyAvailable);
   ids.urgency.setAttribute("aria-valuetext", urgencyAvailable ? `${Math.round(d.interventionUrgency * 100)} percent` : "unavailable");
   if (urgencyAvailable) ids.urgency.setAttribute("aria-valuenow", String(Math.round(d.interventionUrgency * 100)));
   else ids.urgency.removeAttribute("aria-valuenow");
