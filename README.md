@@ -7,10 +7,10 @@ This is an **independent, unsubmitted concept**, not an official comma.ai artifa
 ## Immutable M4A artifact
 
 - Commit: [`6b7be1175a9d9cd3fdaa960b7fcca369ed16a13e`](https://github.com/VeigaPunk/jobs/commit/6b7be1175a9d9cd3fdaa960b7fcca369ed16a13e)
-- [Prototype tree](https://github.com/VeigaPunk/jobs/tree/6b7be1175a9d9cd3fdaa960b7fcca369ed16a13e/design/prototype)
-- [`index.html`](https://github.com/VeigaPunk/jobs/blob/6b7be1175a9d9cd3fdaa960b7fcca369ed16a13e/design/prototype/index.html)
-- [`ui.js`](https://github.com/VeigaPunk/jobs/blob/6b7be1175a9d9cd3fdaa960b7fcca369ed16a13e/design/prototype/ui.js)
-- [Browser smoke test](https://github.com/VeigaPunk/jobs/blob/6b7be1175a9d9cd3fdaa960b7fcca369ed16a13e/design/prototype/tests/browser_smoke.mjs)
+- [Prototype tree](https://github.com/VeigaPunk/jobs/tree/6b7be1175a9d9cd3fdaa960b7fcca369ed16a13e/prototype)
+- [`index.html`](https://github.com/VeigaPunk/jobs/blob/6b7be1175a9d9cd3fdaa960b7fcca369ed16a13e/prototype/index.html)
+- [`ui.js`](https://github.com/VeigaPunk/jobs/blob/6b7be1175a9d9cd3fdaa960b7fcca369ed16a13e/prototype/ui.js)
+- [Browser smoke test](https://github.com/VeigaPunk/jobs/blob/6b7be1175a9d9cd3fdaa960b7fcca369ed16a13e/prototype/tests/browser_smoke.mjs)
 
 No hosted live deployment is verified. Run the immutable tree locally:
 
@@ -18,7 +18,7 @@ No hosted live deployment is verified. Run the immutable tree locally:
 git clone https://github.com/VeigaPunk/jobs.git
 cd jobs
 git checkout 6b7be1175a9d9cd3fdaa960b7fcca369ed16a13e
-cd design/prototype
+cd prototype
 python3 -m http.server 8080
 ```
 
@@ -37,8 +37,8 @@ Open <http://localhost:8080/>.
 
 The dated public-artifact probe observed four accessible entries using, at a high level, an interactive limit gauge, confidence tiers with actuator gauges, a confidence ring with actuator bars, and a confidence halo/tempo treatment. Against only those observed patterns, this concept combines a categorical `LOW / RISING / IMMINENT` cursor, orthogonal reserve channels, an independent urgency channel, and fail-closed stale/unavailable states. This is a descriptive comparison, not evidence of superiority, completeness, rank, or preference.
 
-- [Dated probe evidence](https://github.com/VeigaPunk/jobs/blob/6b7be1175a9d9cd3fdaa960b7fcca369ed16a13e/design/evidence/r1/m004-public-probe.md)
-- [Round 3 report](https://github.com/VeigaPunk/jobs/blob/6b7be1175a9d9cd3fdaa960b7fcca369ed16a13e/design/docs/reports/comma-design-challenge-r3-2026-07-19.md)
+- [Dated probe evidence](https://github.com/VeigaPunk/jobs/blob/6b7be1175a9d9cd3fdaa960b7fcca369ed16a13e/evidence/r1/m004-public-probe.md)
+- [Round 3 report](https://github.com/VeigaPunk/jobs/blob/6b7be1175a9d9cd3fdaa960b7fcca369ed16a13e/docs/reports/comma-design-challenge-r3-2026-07-19.md)
 
 ## Tests and expected output
 
@@ -48,6 +48,7 @@ Requires Node.js and a system Chromium at a standard path, or `CHROMIUM_BIN=/pat
 cd design
 node --check prototype/ui.js
 node --check prototype/tests/browser_smoke.mjs
+node prototype/tests/browser_smoke_gate.mjs
 node prototype/tests/run-tests.mjs
 git diff --check
 ```

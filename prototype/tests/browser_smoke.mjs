@@ -6,9 +6,12 @@ import { rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { createServer as createTcpServer } from "node:net";
 import assert from "node:assert/strict";
 
 const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+const DEFAULT_MODE = "normal";
+const MODES = Object.freeze(["normal", "console-error", "uncaught-exception"]);
 const candidates = [
   process.env.CHROMIUM_BIN,
   "/usr/bin/chromium",
@@ -56,6 +59,19 @@ const startServer = () => {
   });
 };
 
+const nextPort = async () => new Promise((resolve, reject) => {
+  const server = createTcpServer();
+  server.once("error", (error) => {
+    server.close();
+    reject(error);
+  });
+  server.listen(0, "127.0.0.1", () => {
+    const address = server.address();
+    const port = typeof address === "string" ? NaN : address?.port;
+    server.close(() => resolve(port));
+  });
+});
+
 const pickWsEndpoint = async (port) => {
   for (let i = 0; i < 60; i += 1) {
     const res = await fetch(`http://127.0.0.1:${port}/json/list`).catch(() => null);
@@ -74,6 +90,7 @@ class CdpClient {
     this.nextId = 1;
     this.pending = new Map();
     this.listeners = new Map();
+    this.closing = null;
     this.socket = new WebSocket(wsUrl);
     this.connected = new Promise((resolve, reject) => {
       this.socket.onopen = resolve;
@@ -126,10 +143,20 @@ class CdpClient {
   }
 
   close() {
-    this.socket.close();
+    if (this.closing) return this.closing;
+    this.closing = new Promise((resolve) => {
+      if (this.socket.readyState === this.socket.CLOSED) {
+        resolve();
+        return;
+      }
+      this.socket.onclose = () => resolve();
+      this.socket.close();
+    });
     for (const [, pending] of this.pending) {
       pending.reject(new Error("cdp closed"));
     }
+    this.pending.clear();
+    return this.closing;
   }
 }
 
@@ -176,7 +203,7 @@ const contrast = (a, b) => {
   return (hi + 0.05) / (lo + 0.05);
 };
 
-const runViewport = async (cdp, url, width, height, requireContrast) => {
+const runViewport = async (cdp, url, width, height, requireContrast, mode) => {
   const consoleErrors = [];
   const runtimeExceptions = [];
 
@@ -225,6 +252,18 @@ const runViewport = async (cdp, url, width, height, requireContrast) => {
   assert.match(baseline.urgencyAria, /^\d+ percent$/);
   assert.ok(typeof baseline.urgencyNow === "string");
   assert.ok(/independent/i.test(baseline.boundary));
+
+  if (mode === "console-error") {
+    await evaluate(
+      cdp,
+      "(() => { console.error('smoke control: console.error path'); return true; })()",
+    );
+  } else if (mode === "uncaught-exception") {
+    await evaluate(
+      cdp,
+      "(() => { throw new Error('smoke control: uncaught exception'); })()",
+    );
+  }
 
   await evaluate(
     cdp,
@@ -308,11 +347,28 @@ const runViewport = async (cdp, url, width, height, requireContrast) => {
     if (fg && bg) assert.ok(contrast(fg, bg) >= 3);
   }
 
-  assert.deepEqual(consoleErrors, []);
-  assert.deepEqual(runtimeExceptions, []);
+  if (mode === "console-error") {
+    assert.equal(consoleErrors.length, 1);
+    assert.equal(runtimeExceptions.length, 0);
+    } else if (mode === "uncaught-exception") {
+      return;
+  } else {
+    assert.deepEqual(consoleErrors, []);
+    assert.deepEqual(runtimeExceptions, []);
+  }
 
   clearConsole();
   clearException();
+};
+
+const parseMode = (argv) => {
+  const provided = argv.find((arg) => arg.startsWith("--mode="));
+  if (!provided) return DEFAULT_MODE;
+  const value = provided.slice("--mode=".length);
+  if (!MODES.includes(value)) {
+    throw new Error(`unknown smoke mode: ${value}`);
+  }
+  return value;
 };
 
 const main = async () => {
@@ -322,9 +378,10 @@ const main = async () => {
   const server = await startServer();
   const serverPort = server.address().port;
   const url = `http://127.0.0.1:${serverPort}`;
-  const debugPort = 9393;
+  const debugPort = await nextPort();
   const userData = path.join(tmpdir(), `comma-ui-smoke-${Date.now()}`);
   mkdirSync(userData, { recursive: true });
+  const mode = parseMode(process.argv.slice(2));
 
   const child = spawn(
     browser,
@@ -344,14 +401,25 @@ const main = async () => {
   try {
     const ws = await pickWsEndpoint(debugPort);
     const cdp = new CdpClient(ws);
-    await runViewport(cdp, url, 390, 844, process.env.CONTRAST_CHECK === "1");
-    await runViewport(cdp, url, 1366, 768, false);
-    cdp.close();
+    await runViewport(
+      cdp,
+      url,
+      390,
+      844,
+      process.env.CONTRAST_CHECK === "1",
+      mode,
+    );
+    if (mode === "normal") {
+      await runViewport(cdp, url, 1366, 768, false, mode);
+    }
+    await cdp.close();
     console.log("prototype/browser smoke: pass");
   } finally {
-    child.kill("SIGTERM");
-    await sleep(100);
-    server.close();
+    const closeExit = async () => new Promise((resolve) => {
+      child.once("close", () => resolve());
+      child.kill("SIGTERM");
+    });
+    await Promise.allSettled([closeExit(), new Promise((resolve) => server.close(resolve))]);
     rmSync(userData, { recursive: true, force: true });
   }
 };
