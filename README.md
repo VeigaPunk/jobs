@@ -1,65 +1,72 @@
-# comma design frontier - local evaluator manifest
+# Independent, unsubmitted concept — evaluator manifest
 
-## Status and independence
+## Status and challenge goal
 
-- This artifact is an **independent, local prototype** with no official affiliation to any external evaluator workflow.
-- This prototype is **UNSUBMITTED** (not part of an official comma.ai intake or review).
-- This repository branch records a local, non-authoritative effort only: it is explicit that there is **no official score, no placement claim, and no acceptance signal**.
-- No submission form, work email, or intake portal is required to use this artifact.
+This is an **independent, unsubmitted concept**, not an official comma.ai artifact. It explores an L2 responsibility UI that separates intervention likelihood, actuator reserve, and intervention urgency while making stale or unavailable data explicit. It has **no official score, rank, placement, acknowledgment, acceptance, or affiliation**.
 
-## Immutable implementation anchor
+## Immutable M4A artifact
 
-- `M4A` commit: `6ea3505fe2b215d78ea60761fd517611e2a6cc59`
-- `M4A` manifest link: https://github.com/VeigaPunk/jobs/commit/6ea3505fe2b215d78ea60761fd517611e2a6cc59
-- Local artifact location: `prototype/index.html`
-- Runtime module: `prototype/ui.js`
-- Contract and checks: `prototype/tests/run-tests.mjs`
+- Commit: [`6b7be1175a9d9cd3fdaa960b7fcca369ed16a13e`](https://github.com/VeigaPunk/jobs/commit/6b7be1175a9d9cd3fdaa960b7fcca369ed16a13e)
+- [Prototype tree](https://github.com/VeigaPunk/jobs/tree/6b7be1175a9d9cd3fdaa960b7fcca369ed16a13e/design/prototype)
+- [`index.html`](https://github.com/VeigaPunk/jobs/blob/6b7be1175a9d9cd3fdaa960b7fcca369ed16a13e/design/prototype/index.html)
+- [`ui.js`](https://github.com/VeigaPunk/jobs/blob/6b7be1175a9d9cd3fdaa960b7fcca369ed16a13e/design/prototype/ui.js)
+- [Browser smoke test](https://github.com/VeigaPunk/jobs/blob/6b7be1175a9d9cd3fdaa960b7fcca369ed16a13e/design/prototype/tests/browser_smoke.mjs)
 
-## Deterministic "Know when UI does not know" flow
-
-1. Initial render shows populated ARIA state for confidence and urgency (`run`/start state).
-2. Increase `Data age (ms)` above `STALE_MS` in the prototype controls.
-3. After the next passive repaint cycle, confidence and urgency should become `unavailable`.
-4. Reserve and status text should explicitly include a stale indicator.
-5. Set invalid/overflow values for brake/accel control inputs to force explicit unavailability behavior without throwing runtime exceptions.
-
-## Bound differentiation and integrity boundaries
-
-- The page retains a persistent **Level-2 responsibility** statement and explicit **NON-OFFICIAL LOCAL PROXY EVALUATOR** boundary.
-- It does not claim jointly feasible full-control behavior.
-- Signal channels remain orthogonal: confidence class, reserves, and urgency.
-- Confidence class is categorical (`LOW`, `RISING`, `IMMINENT`) rather than a percentage.
-- This remains a **NON-OFFICIAL** evaluator implementation and does not represent an official submission.
-
-## Execution and test workflow
-
-From repository root:
+No hosted live deployment is verified. Run the immutable tree locally:
 
 ```sh
-cd prototype
+git clone https://github.com/VeigaPunk/jobs.git
+cd jobs
+git checkout 6b7be1175a9d9cd3fdaa960b7fcca369ed16a13e
+cd design/prototype
 python3 -m http.server 8080
 ```
 
-Open `http://localhost:8080`.
+Open <http://localhost:8080/>.
 
-From `prototype/`:
+## Know When the UI Doesn't Know
+
+1. On load, confirm confidence and urgency are populated and the persistent Level-2 and **NON-OFFICIAL** labels remain visible.
+2. Expand **Prototype controls**.
+3. Set **Data age (ms)** to `2500`.
+4. Within one passive repaint interval, confidence and urgency become `unavailable`, and status reports `stale > 1500ms`.
+5. Return age to `0`; clear **Brake available** or **Accel available** to see that channel's explicit unavailable state.
+6. Select **Run deterministic steering-limit scenario** to replay the fixed sequence.
+
+## Rationale and bounded differentiation
+
+The dated public-artifact probe observed four accessible entries using, at a high level, an interactive limit gauge, confidence tiers with actuator gauges, a confidence ring with actuator bars, and a confidence halo/tempo treatment. Against only those observed patterns, this concept combines a categorical `LOW / RISING / IMMINENT` cursor, orthogonal reserve channels, an independent urgency channel, and fail-closed stale/unavailable states. This is a descriptive comparison, not evidence of superiority, completeness, rank, or preference.
+
+- [Dated probe evidence](https://github.com/VeigaPunk/jobs/blob/6b7be1175a9d9cd3fdaa960b7fcca369ed16a13e/design/evidence/r1/m004-public-probe.md)
+- [Round 3 report](https://github.com/VeigaPunk/jobs/blob/6b7be1175a9d9cd3fdaa960b7fcca369ed16a13e/design/docs/reports/comma-design-challenge-r3-2026-07-19.md)
+
+## Tests and expected output
+
+Requires Node.js and a system Chromium at a standard path, or `CHROMIUM_BIN=/path/to/chromium`. Chromium absence fails clearly; it is never treated as a pass.
 
 ```sh
-node tests/run-tests.mjs
+cd design
+node --check prototype/ui.js
+node --check prototype/tests/browser_smoke.mjs
+node prototype/tests/run-tests.mjs
+git diff --check
 ```
 
-Smoke checks are dependency-free at runtime because they use a local `system` Chromium binary and Node standard modules only.
+Expected stable lines:
 
-## Evidence, checks, and limits
+```text
+prototype engine tests: pass
+artifact contract tests: pass
+prototype/browser smoke: pass
+```
 
-- Primary artifact checks: `prototype/tests/run-tests.mjs`
-- UI defect fix and interaction regression evidence is enforced by the included browser smoke test.
-- Known limits:
-  - No WCAG or screen-reader matrix is treated as conclusive; contrast checks are optional (`CONTRAST_CHECK=1`).
-  - No official evaluator output, official scoring, placement, or submission ranking is claimed or expected.
-  - This branch has no external intake binding; work email / form evidence is intentionally not used.
+The browser smoke captures console/runtime exceptions; checks no horizontal overflow at `390x844` and `1366x768`; verifies populated ARIA values, fresh-to-stale unavailability, and a basic Tab sequence. Chromium may also print an environment-specific DevTools line.
 
-## Reports and traceability
+## Limitations and intake boundary
 
-- Current round notes: `docs/reports/design-frontier-r3-2026-07-19.md`
-- Audit artifacts in `evidence/`.
+- No official score, rank, placement, acknowledgment, acceptance, or completed human study exists.
+- The dated probe found **two** competitor entries inaccessible (one missing and one blocked); no content or quality is inferred from access status. A count of three is not supported by the repository evidence.
+- Contrast conformance is **unverified**. `CONTRAST_CHECK=1` performs only an optional computed foreground/background token check, not a WCAG audit or assistive-technology matrix.
+- The documented official route is the [common Google Form](https://forms.gle/US88Hg7UR6bBuW3BA). It **has not been used for this concept**, and no acknowledgment has been received.
+- `work@comma.ai` is **not represented here as leaderboard intake**.
+- The in-page proxy is a **NON-OFFICIAL LOCAL PROXY EVALUATOR**. It has no official score and cannot establish rank, submission, acceptance, or placement.
