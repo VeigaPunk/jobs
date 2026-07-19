@@ -45,9 +45,9 @@ The dated public-artifact probe observed four accessible entries using, at a hig
 Requires Node.js and a system Chromium at a standard path, or `CHROMIUM_BIN=/path/to/chromium`. Chromium absence fails clearly; it is never treated as a pass.
 
 ```sh
-cd design
 node --check prototype/ui.js
 node --check prototype/tests/browser_smoke.mjs
+node --check prototype/tests/browser_smoke_gate.mjs
 node prototype/tests/browser_smoke_gate.mjs
 node prototype/tests/run-tests.mjs
 git diff --check
@@ -59,6 +59,7 @@ Expected stable lines:
 prototype engine tests: pass
 artifact contract tests: pass
 prototype/browser smoke: pass
+prototype/browser smoke gate: pass
 ```
 
 The browser smoke captures console/runtime exceptions; checks no horizontal overflow at `390x844` and `1366x768`; verifies populated ARIA values, fresh-to-stale unavailability, and a basic Tab sequence. Chromium may also print an environment-specific DevTools line.

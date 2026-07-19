@@ -39,12 +39,14 @@ const gateImmutableLinks = async () => {
   for (const url of EXPECTED_LINKS) {
     const response = await fetch(url, { redirect: "manual" });
     assert.equal(response.status, 200, `immutable link ${url} expected 200 got ${response.status}`);
+    console.log(`immutable link: ${response.status} ${url}`);
   }
 
   const officialForm = "https://forms.gle/US88Hg7UR6bBuW3BA";
   const formResponse = await fetch(officialForm, { redirect: "manual" });
-  assert.ok([301, 302, 303, 307, 308, 401, 403, 404, 410, 451].includes(formResponse.status),
-    `official intake link expected auth/restricted marker got ${formResponse.status}`);
+  assert.ok([200, 301, 302, 303, 307, 308, 401, 403].includes(formResponse.status),
+    `official intake link expected success, redirect, or auth gate; got ${formResponse.status}`);
+  console.log(`official form route: ${formResponse.status} ${officialForm}`);
 };
 
 const run = async () => {
@@ -57,11 +59,13 @@ const run = async () => {
 
   assert.equal(smokeOne.code, 0, `normal smoke instance one exit ${smokeOne.code}`);
   assert.equal(smokeTwo.code, 0, `normal smoke instance two exit ${smokeTwo.code}`);
+  console.log(`concurrent normal smoke exits: ${smokeOne.code}, ${smokeTwo.code}`);
 
   const consoleMode = await runSmoke("console-error");
   const uncaughtMode = await runSmoke("uncaught-exception");
   assert.ok(consoleMode.code !== 0, `console-error mode expected nonzero got ${consoleMode.code}`);
   assert.ok(uncaughtMode.code !== 0, `uncaught-exception mode expected nonzero got ${uncaughtMode.code}`);
+  console.log(`negative smoke exits: console-error=${consoleMode.code}, uncaught-exception=${uncaughtMode.code}`);
 
   console.log("prototype/browser smoke gate: pass");
   process.stdout.write(smokeOne.stdout);

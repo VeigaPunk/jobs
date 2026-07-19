@@ -210,6 +210,11 @@ const runViewport = async (cdp, url, width, height, requireContrast, mode) => {
   const clearConsole = cdp.on("Log.entryAdded", (params) => {
     if (params.entry.level === "error") consoleErrors.push(params.entry.text);
   });
+  const clearConsoleApi = cdp.on("Runtime.consoleAPICalled", (params) => {
+    if (params.type === "error") {
+      consoleErrors.push(params.args?.map((arg) => arg.value ?? arg.description ?? "console.error").join(" "));
+    }
+  });
   const clearException = cdp.on("Runtime.exceptionThrown", (params) => {
     runtimeExceptions.push(
       params.exceptionDetails?.exception?.description ||
@@ -261,8 +266,9 @@ const runViewport = async (cdp, url, width, height, requireContrast, mode) => {
   } else if (mode === "uncaught-exception") {
     await evaluate(
       cdp,
-      "(() => { throw new Error('smoke control: uncaught exception'); })()",
+      "(() => { setTimeout(() => { throw new Error('smoke control: uncaught exception'); }, 0); return true; })()",
     );
+    await sleep(80);
   }
 
   await evaluate(
@@ -347,17 +353,11 @@ const runViewport = async (cdp, url, width, height, requireContrast, mode) => {
     if (fg && bg) assert.ok(contrast(fg, bg) >= 3);
   }
 
-  if (mode === "console-error") {
-    assert.equal(consoleErrors.length, 1);
-    assert.equal(runtimeExceptions.length, 0);
-    } else if (mode === "uncaught-exception") {
-      return;
-  } else {
-    assert.deepEqual(consoleErrors, []);
-    assert.deepEqual(runtimeExceptions, []);
-  }
+  assert.deepEqual(consoleErrors, []);
+  assert.deepEqual(runtimeExceptions, []);
 
   clearConsole();
+  clearConsoleApi();
   clearException();
 };
 
@@ -379,7 +379,7 @@ const main = async () => {
   const serverPort = server.address().port;
   const url = `http://127.0.0.1:${serverPort}`;
   const debugPort = await nextPort();
-  const userData = path.join(tmpdir(), `comma-ui-smoke-${Date.now()}`);
+  const userData = path.join(tmpdir(), `comma-ui-smoke-${process.pid}-${Date.now()}`);
   mkdirSync(userData, { recursive: true });
   const mode = parseMode(process.argv.slice(2));
 
@@ -397,10 +397,12 @@ const main = async () => {
     ],
     { stdio: ["ignore", "pipe", "inherit"] },
   );
+  const childClosed = new Promise((resolve) => child.once("close", resolve));
+  let cdp;
 
   try {
     const ws = await pickWsEndpoint(debugPort);
-    const cdp = new CdpClient(ws);
+    cdp = new CdpClient(ws);
     await runViewport(
       cdp,
       url,
@@ -412,14 +414,14 @@ const main = async () => {
     if (mode === "normal") {
       await runViewport(cdp, url, 1366, 768, false, mode);
     }
-    await cdp.close();
     console.log("prototype/browser smoke: pass");
   } finally {
-    const closeExit = async () => new Promise((resolve) => {
-      child.once("close", () => resolve());
-      child.kill("SIGTERM");
-    });
-    await Promise.allSettled([closeExit(), new Promise((resolve) => server.close(resolve))]);
+    if (cdp) await cdp.close().catch(() => {});
+    if (child.exitCode === null && child.signalCode === null) child.kill("SIGTERM");
+    await Promise.allSettled([
+      childClosed,
+      new Promise((resolve, reject) => server.close((error) => error ? reject(error) : resolve())),
+    ]);
     rmSync(userData, { recursive: true, force: true });
   }
 };
