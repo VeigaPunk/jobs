@@ -1,0 +1,31 @@
+{
+  "date": "2026-07-19",
+  "scope": ".",
+  "official_sources": [
+    "https://comma.ai/leaderboard#design_challenge",
+    "https://raw.githubusercontent.com/commaai/jobs/refs/heads/master/design.md"
+  ],
+  "official_evaluator": "not published in observed sources",
+  "external_action_recorded": false,
+  "moves": [
+    {"move_id":"M001","source_prefix":"ccs","axis":"official evidence","claim":"Treat the official intake as authoritative; do not optimize against an unpublished evaluator.","verdict":"accept","evidence":"none — research artifact"},
+    {"move_id":"M002","source_prefix":"ccs","axis":"differentiation","claim":"Keep intervention confidence distinct from actuator headroom and demonstrate mixed states.","verdict":"accept","evidence":"none — research artifact"},
+    {"move_id":"M003","source_prefix":"cdx","axis":"technical feasibility","claim":"Use a producer-side normalized confidence/headroom contract and flat primitive renderer.","verdict":"accept conditionally","evidence":"none — reverse-engineering artifact"},
+    {"move_id":"M004","source_prefix":"ccs","axis":"differentiation","claim":"Differentiate beyond recurring gauges, tiers, rings, bars, and halos.","verdict":"accept","evidence":"evidence/r1/m004-public-probe.md"},
+    {"move_id":"M005","source_prefix":"cdx","axis":"anticipation","claim":"Add a jointly feasible solid/dashed trajectory horizon.","verdict":"defer","evidence":"none — adversarial-design artifact"},
+    {"move_id":"M006","source_prefix":"ccs","axis":"comprehension","claim":"Use orthogonal channels for confidence, actuator reserve, and urgency while responsibility remains invariant.","verdict":"accept conditionally","evidence":"none — cross-axis artifact"}
+  ],
+  "source_map_serialization": "[{\"move_id\":\"M001\",\"source_prefix\":\"ccs\"},{\"move_id\":\"M002\",\"source_prefix\":\"ccs\"},{\"move_id\":\"M003\",\"source_prefix\":\"cdx\"},{\"move_id\":\"M004\",\"source_prefix\":\"ccs\"},{\"move_id\":\"M005\",\"source_prefix\":\"cdx\"},{\"move_id\":\"M006\",\"source_prefix\":\"ccs\"}]",
+  "audit_hash": "ffcf47a412e57b18276dae7085eac783319d7999ab94b54732a5fc84acb5ce30",
+  "reproduce_audit_hash": "python -c 'import hashlib,json; d=json.load(open(\"evidence/r1/ledger.json\")); print(hashlib.sha256(d[\"source_map_serialization\"].encode()).hexdigest())'",
+  "manifest_hash": "132f419628de955cc7513ff352627737f522789d8d1630c99b5b82995bffd89d",
+  "reproduce_manifest_hash": "python -c 'import hashlib,json; d=json.load(open(\"evidence/r1/ledger.json\")); b=json.dumps({\"moves\":d[\"moves\"],\"evidence_audit\":d[\"evidence_audit\"]},sort_keys=True,separators=(\",\",\":\")).encode(); print(hashlib.sha256(b).hexdigest())'",
+  "artifacts_sha256": {
+    "RECON.md": "f7f6cfc35cba3e5a4088f6eebc657f70cbb0ca86e321a511be2afedc19d13240",
+    "MODEL.md": "1b60439fc7db79d8e39d3458348d3450fbcfc2c4d14331c9d9278e84f2dec1a8",
+    "evidence/r1/m004-public-probe.md": "5f48163f25bec7b23e86fda1a2b2a62a2a696508684b91e3b14f94b9841b4d80",
+    "docs/reports/design-frontier-r1-2026-07-19.md": "eef01859da476a53ba189b457767d107363b8eb12fdb0fa74535e73dfc9c4222"
+  },
+  "reproduce_artifact_hashes": "sha256sum RECON.md MODEL.md evidence/r1/m004-public-probe.md docs/reports/design-frontier-r1-2026-07-19.md",
+  "evidence_audit": {"with_role_required_evidence_form":6,"without_required_evidence_form":0,"dropped":0,"spoof_flagged":0}
+}
