@@ -1,0 +1,661 @@
+<title>The Degen vs The World</title>
+<style>
+  @font-face {
+    font-family: 'Mono';
+    src: local('SF Mono'), local('Menlo'), local('Consolas'), local('Liberation Mono');
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --ground: #0c0c14;
+    --panel: #161628;
+    --panel-border: #252540;
+    --felt: #1a4030;
+    --felt-dim: #0f2a1e;
+    --gold: #e8b830;
+    --gold-dim: #a07818;
+    --ivory: #ede8dc;
+    --muted: #686078;
+    --scarlet: #d83838;
+    --emerald: #38c860;
+    --blue: #3888d8;
+    --purple: #9868d0;
+    --silver: #a0a8b8;
+  }
+
+  body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: var(--ground);
+    color: var(--ivory);
+    min-height: 100vh;
+    padding: 0 16px 40px;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    text-align: center;
+    padding: 44px 0 28px;
+    max-width: 960px;
+    margin: 0 auto;
+  }
+  .hero-eyebrow {
+    font-size: 0.7rem;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 10px;
+  }
+  .hero h1 {
+    font-size: clamp(2rem, 5vw, 3rem);
+    font-weight: 900;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    line-height: 1.05;
+    text-wrap: balance;
+    color: var(--gold);
+    text-shadow: 0 0 40px rgba(232, 184, 48, 0.2);
+  }
+  .hero h1 .vs {
+    display: block;
+    font-size: 0.4em;
+    letter-spacing: 0.3em;
+    color: var(--muted);
+    margin: 4px 0;
+    font-weight: 400;
+  }
+  .hero-sub {
+    font-size: 0.82rem;
+    color: var(--muted);
+    margin-top: 12px;
+    letter-spacing: 0.02em;
+  }
+  .hero-sub span { color: var(--ivory); font-weight: 600; }
+
+  /* ── BUTTON ── */
+  .deal-btn {
+    display: block;
+    margin: 0 auto 32px;
+    padding: 14px 44px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    border: 2px solid var(--gold);
+    border-radius: 50px;
+    background: transparent;
+    color: var(--gold);
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s, transform 0.1s, box-shadow 0.2s;
+  }
+  .deal-btn:hover {
+    background: var(--gold);
+    color: var(--ground);
+    box-shadow: 0 0 30px rgba(232, 184, 48, 0.25);
+  }
+  .deal-btn:active { transform: scale(0.96); }
+  .deal-btn:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; }
+
+  /* ── GRID ── */
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    max-width: 960px;
+    margin: 0 auto;
+  }
+  .full { grid-column: 1 / -1; }
+
+  /* ── PANEL ── */
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--panel-border);
+    border-radius: 8px;
+    padding: 20px;
+    overflow: hidden;
+  }
+  .panel-head {
+    font-size: 0.65rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--panel-border);
+  }
+
+  /* ── HISTOGRAM ── */
+  .histogram {
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 16px;
+    height: 280px;
+    padding: 8px 0 0;
+  }
+  .bar-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 1;
+    max-width: 130px;
+    min-width: 0;
+  }
+  .bar {
+    width: 100%;
+    border-radius: 4px 4px 0 0;
+    min-height: 2px;
+    position: relative;
+    transition: height 0.9s cubic-bezier(0.22, 1, 0.36, 1);
+    background-size: 100% 8px;
+  }
+  .bar-count {
+    position: absolute;
+    top: -28px;
+    width: 100%;
+    text-align: center;
+    font-weight: 800;
+    font-size: 1.1rem;
+    font-variant-numeric: tabular-nums;
+  }
+  .bar-info {
+    margin-top: 10px;
+    text-align: center;
+    line-height: 1.35;
+  }
+  .bar-name {
+    font-weight: 700;
+    font-size: 0.82rem;
+    display: block;
+  }
+  .bar-strat {
+    font-size: 0.62rem;
+    color: var(--muted);
+    display: block;
+    margin-top: 2px;
+  }
+
+  /* ── STATS ── */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .stat-card {
+    background: rgba(255,255,255,0.03);
+    border-radius: 6px;
+    padding: 12px 14px;
+  }
+  .stat-label {
+    font-size: 0.6rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .stat-val {
+    font-size: 1.4rem;
+    font-weight: 800;
+    margin-top: 4px;
+    font-variant-numeric: tabular-nums;
+    color: var(--ivory);
+  }
+
+  /* ── STANDINGS TABLE ── */
+  .standings {
+    width: 100%;
+    border-collapse: collapse;
+    font-variant-numeric: tabular-nums;
+  }
+  .standings th {
+    text-align: left;
+    font-size: 0.6rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 0 8px 8px;
+    font-weight: 600;
+    border-bottom: 1px solid var(--panel-border);
+  }
+  .standings td {
+    padding: 7px 8px;
+    font-size: 0.82rem;
+    border-bottom: 1px solid rgba(255,255,255,0.03);
+  }
+  .standings tr:last-child td { border-bottom: none; }
+  .standings .rank-num {
+    font-weight: 800;
+    width: 32px;
+    color: var(--muted);
+    font-size: 0.75rem;
+  }
+  .standings .pname { font-weight: 700; }
+  .standings .avg { font-weight: 600; }
+  .standings .wins-col { text-align: right; color: var(--muted); }
+
+  /* ── LOG ── */
+  .log-scroll {
+    max-height: 180px;
+    overflow-y: auto;
+    font-family: 'SF Mono', 'Menlo', 'Consolas', 'Liberation Mono', monospace;
+    font-size: 0.72rem;
+    line-height: 1.7;
+    color: var(--muted);
+    background: rgba(0,0,0,0.25);
+    border-radius: 6px;
+    padding: 12px 14px;
+  }
+  .log-scroll::-webkit-scrollbar { width: 4px; }
+  .log-scroll::-webkit-scrollbar-track { background: transparent; }
+  .log-scroll::-webkit-scrollbar-thumb { background: var(--panel-border); border-radius: 2px; }
+  .log-scroll .gold { color: var(--gold); }
+  .log-scroll .elim { color: var(--scarlet); }
+  .log-scroll .win { color: var(--emerald); font-weight: 700; }
+
+  @media (max-width: 640px) {
+    .grid { grid-template-columns: 1fr; }
+    .histogram { height: 200px; gap: 8px; }
+    .hero h1 { font-size: 1.8rem; }
+    .stats-grid { grid-template-columns: 1fr; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .bar { transition: none; }
+  }
+</style>
+
+<div class="hero">
+  <div class="hero-eyebrow">100 No-Limit Hold 'em Tournaments</div>
+  <h1>The Degen<span class="vs">vs</span>The World</h1>
+  <p class="hero-sub"><span>6 players</span> &middot; last standing wins &middot; <span>1,000 chips</span> each</p>
+</div>
+
+<button class="deal-btn" id="dealBtn" onclick="runAndRender()">Deal 100 Tournaments</button>
+
+<div class="grid">
+  <div class="panel full">
+    <div class="panel-head">Tournament Wins</div>
+    <div class="histogram" id="histogram"></div>
+  </div>
+  <div class="panel">
+    <div class="panel-head">Stats</div>
+    <div class="stats-grid" id="stats"></div>
+  </div>
+  <div class="panel">
+    <div class="panel-head">Standings &mdash; Avg Finish</div>
+    <table class="standings" id="positions"></table>
+  </div>
+  <div class="panel full">
+    <div class="panel-head">Notable Moments &mdash; Last Tournament</div>
+    <div class="log-scroll" id="log"><span style="color:var(--muted)">Hit the button to run the sim.</span></div>
+  </div>
+</div>
+
+<script>
+const PLAYERS = [
+  { id: 0, name: "The Degen",         strat: "All-In Every Hand",   color: "#e8b830" },
+  { id: 1, name: "The Shark",         strat: "Tight-Aggressive",    color: "#3888d8" },
+  { id: 2, name: "The Rock",          strat: "Ultra-Tight",         color: "#a0a8b8" },
+  { id: 3, name: "The Mathematician", strat: "Pot-Odds EV",         color: "#38c860" },
+  { id: 4, name: "The Maniac",        strat: "Loose-Aggressive",    color: "#d83838" },
+  { id: 5, name: "The Grinder",       strat: "Tight-Passive",       color: "#9868d0" },
+];
+
+const RANKS = '23456789TJQKA';
+const SUITS = 'shdc';
+function deck() { const d = []; for (let r = 0; r < 13; r++) for (let s = 0; s < 4; s++) d.push(r * 4 + s); return d; }
+function shuffle(a) { for (let i = a.length - 1; i > 0; i--) { const j = Math.random() * (i + 1) | 0; [a[i], a[j]] = [a[j], a[i]]; } return a; }
+function rank(c) { return c >> 2; }
+function suit(c) { return c & 3; }
+function cardStr(c) { return RANKS[rank(c)] + SUITS[suit(c)]; }
+
+function evalHand(cards) {
+  let best = null;
+  const combos = combinations(cards, 5);
+  for (const c of combos) {
+    const v = eval5(c);
+    if (!best || cmpVal(v, best) > 0) best = v;
+  }
+  return best;
+}
+
+function combinations(arr, k) {
+  if (k === 0) return [[]];
+  if (arr.length < k) return [];
+  const res = [];
+  const [first, ...rest] = arr;
+  for (const c of combinations(rest, k - 1)) res.push([first, ...c]);
+  for (const c of combinations(rest, k)) res.push(c);
+  return res;
+}
+
+function eval5(cards) {
+  const ranks = cards.map(rank).sort((a, b) => b - a);
+  const suits = cards.map(suit);
+  const isFlush = suits.every(s => s === suits[0]);
+  let isStraight = false, straightHigh = 0;
+  const u = [...new Set(ranks)].sort((a, b) => b - a);
+  if (u.length === 5) {
+    if (u[0] - u[4] === 4) { isStraight = true; straightHigh = u[0]; }
+    if (u[0] === 12 && u[1] === 3 && u[2] === 2 && u[3] === 1 && u[4] === 0) { isStraight = true; straightHigh = 3; }
+  }
+  const counts = {};
+  ranks.forEach(r => counts[r] = (counts[r] || 0) + 1);
+  const groups = Object.entries(counts).map(([r, c]) => [c, +r]).sort((a, b) => b[0] - a[0] || b[1] - a[1]);
+  const pat = groups.map(g => g[0]).join('');
+
+  if (isStraight && isFlush) return { cat: straightHigh === 12 ? 9 : 8, k: [straightHigh] };
+  if (pat === '41') return { cat: 7, k: [groups[0][1], groups[1][1]] };
+  if (pat === '32') return { cat: 6, k: [groups[0][1], groups[1][1]] };
+  if (isFlush) return { cat: 5, k: ranks };
+  if (isStraight) return { cat: 4, k: [straightHigh] };
+  if (pat === '311') return { cat: 3, k: [groups[0][1], groups[1][1], groups[2][1]] };
+  if (pat === '221') return { cat: 2, k: [groups[0][1], groups[1][1], groups[2][1]] };
+  if (pat === '2111') return { cat: 1, k: [groups[0][1], groups[1][1], groups[2][1], groups[3][1]] };
+  return { cat: 0, k: ranks };
+}
+
+function cmpVal(a, b) {
+  if (a.cat !== b.cat) return a.cat - b.cat;
+  for (let i = 0; i < Math.min(a.k.length, b.k.length); i++) {
+    if (a.k[i] !== b.k[i]) return a.k[i] - b.k[i];
+  }
+  return 0;
+}
+
+function handStrength(hole, board) {
+  if (board.length === 0) return preflop(hole);
+  return evalHand([...hole, ...board]).cat / 9 + 0.05;
+}
+
+function preflop(hole) {
+  const r1 = rank(hole[0]), r2 = rank(hole[1]);
+  const suited = suit(hole[0]) === suit(hole[1]);
+  const hi = Math.max(r1, r2), lo = Math.min(r1, r2);
+  if (r1 === r2) return 0.5 + hi * 0.038;
+  let s = (hi + lo) * 0.02 + (suited ? 0.06 : 0);
+  if (hi >= 12 && lo >= 11) s += 0.15;
+  else if (hi >= 12 && lo >= 9) s += 0.08;
+  return Math.min(s, 0.95);
+}
+
+function isPremium(hole) { return preflop(hole) >= 0.55; }
+function isUltraPremium(hole) { return preflop(hole) >= 0.72; }
+
+function decide(pid, hole, board, pot, toCall, chips, street) {
+  const str = handStrength(hole, board);
+
+  switch (pid) {
+    case 0: return { action: 'raise', amount: chips };
+
+    case 1: {
+      if (street === 0 && !isPremium(hole)) return { action: 'fold' };
+      if (str > 0.65) return { action: 'raise', amount: Math.min(chips, Math.max(toCall * 3, pot)) };
+      if (str > 0.4 && toCall <= pot * 0.5) return { action: 'call' };
+      if (toCall === 0) return { action: 'check' };
+      return { action: 'fold' };
+    }
+
+    case 2: {
+      if (street === 0 && !isUltraPremium(hole)) return { action: 'fold' };
+      if (street === 0) return { action: 'raise', amount: Math.min(chips, Math.max(toCall * 4, pot * 0.8)) };
+      if (str > 0.55) return { action: 'raise', amount: Math.min(chips, pot * 0.75) };
+      if (toCall === 0) return { action: 'check' };
+      if (str > 0.35 && toCall <= pot * 0.3) return { action: 'call' };
+      return { action: 'fold' };
+    }
+
+    case 3: {
+      const ev = str * (pot + toCall) - (1 - str) * toCall;
+      if (str > 0.65) return { action: 'raise', amount: Math.min(chips, pot * 0.7) };
+      if (ev > 0 || toCall === 0) return toCall > 0 ? { action: 'call' } : { action: 'check' };
+      return { action: 'fold' };
+    }
+
+    case 4: {
+      const playRate = street === 0 ? 0.6 : 0.5;
+      if (street === 0 && Math.random() > playRate && str < 0.3) return { action: 'fold' };
+      if (Math.random() < 0.35 || str > 0.5) return { action: 'raise', amount: Math.min(chips, Math.max(toCall * 2.5, pot * 0.8)) };
+      if (street === 3 && str < 0.3 && Math.random() < 0.4) return { action: 'raise', amount: Math.min(chips, pot * 0.65) };
+      if (toCall === 0) return { action: 'check' };
+      if (toCall <= pot * 0.6 || str > 0.35) return { action: 'call' };
+      return { action: 'fold' };
+    }
+
+    case 5: {
+      if (street === 0 && preflop(hole) < 0.35) return { action: 'fold' };
+      if (str > 0.75) return toCall > 0 ? { action: 'call' } : { action: 'check' };
+      if (str > 0.85) return { action: 'raise', amount: Math.min(chips, pot * 0.5) };
+      if (toCall === 0) return { action: 'check' };
+      if (toCall <= pot * 0.4 && str > 0.25) return { action: 'call' };
+      return { action: 'fold' };
+    }
+  }
+}
+
+function playHand(players, blinds, handNum, log) {
+  if (players.filter(p => p.chips > 0).length < 2) return 0;
+  const active = players.filter(p => p.chips > 0);
+  const d = shuffle(deck());
+  let di = 0;
+
+  const holes = {};
+  active.forEach(p => { holes[p.id] = [d[di++], d[di++]]; });
+
+  const board = [];
+  const bets = {};
+  active.forEach(p => bets[p.id] = 0);
+  let pot = 0;
+  const folded = new Set();
+  const allIn = new Set();
+
+  const sb = Math.min(active[0].chips, blinds[0]);
+  const bb = Math.min(active[1 % active.length].chips, blinds[1]);
+  active[0].chips -= sb; bets[active[0].id] = sb; pot += sb;
+  const bbP = active[1 % active.length];
+  bbP.chips -= bb; bets[bbP.id] = bb; pot += bb;
+
+  function bettingRound(street, startIdx) {
+    const inH = active.filter(p => !folded.has(p.id) && !allIn.has(p.id));
+    if (inH.length <= 1) return;
+    let maxBet = Math.max(...active.map(p => bets[p.id]));
+    let lastRaiser = -1, acted = new Set();
+    let idx = startIdx % active.length;
+    let safe = 0;
+
+    while (safe++ < 60) {
+      const p = active[idx % active.length];
+      idx++;
+      if (folded.has(p.id) || allIn.has(p.id)) continue;
+      if (acted.has(p.id) && bets[p.id] >= maxBet) break;
+      if (p.id === lastRaiser) break;
+
+      const toCall = maxBet - bets[p.id];
+      const dec = decide(p.id, holes[p.id], board, pot, toCall, p.chips, street);
+
+      if (dec.action === 'fold') { folded.add(p.id); }
+      else if (dec.action === 'check') { /* ok */ }
+      else if (dec.action === 'call') {
+        const amt = Math.min(toCall, p.chips);
+        p.chips -= amt; bets[p.id] += amt; pot += amt;
+        if (p.chips === 0) allIn.add(p.id);
+      }
+      else if (dec.action === 'raise') {
+        const total = Math.min(dec.amount, p.chips);
+        const raise = Math.max(total, toCall);
+        const amt = Math.min(raise, p.chips);
+        p.chips -= amt; bets[p.id] += amt; pot += amt;
+        if (bets[p.id] > maxBet) { maxBet = bets[p.id]; lastRaiser = p.id; }
+        if (p.chips === 0) allIn.add(p.id);
+      }
+      acted.add(p.id);
+      if (active.filter(p => !folded.has(p.id)).length <= 1) return;
+    }
+  }
+
+  bettingRound(0, active.length > 2 ? 2 : 0);
+
+  for (let street = 1; street <= 3; street++) {
+    if (active.filter(p => !folded.has(p.id)).length <= 1) break;
+    if (street === 1) board.push(d[di++], d[di++], d[di++]);
+    else board.push(d[di++]);
+    active.forEach(p => bets[p.id] = 0);
+    bettingRound(street, 0);
+  }
+
+  const contenders = active.filter(p => !folded.has(p.id));
+  let winner;
+  if (contenders.length === 1) {
+    winner = contenders[0];
+  } else {
+    let bestVal = null, bestP = null;
+    for (const p of contenders) {
+      const v = evalHand([...holes[p.id], ...board]);
+      if (!bestVal || cmpVal(v, bestVal) > 0) { bestVal = v; bestP = p; }
+    }
+    winner = bestP;
+  }
+  winner.chips += pot;
+
+  if (pot > 200 && log) {
+    const h = holes[winner.id].map(cardStr).join(' ');
+    log.push({ type: 'pot', text: `Hand #${handNum}: ${PLAYERS[winner.id].name} takes ${pot} chips [${h}]`, pid: winner.id });
+  }
+
+  active.filter(p => p.chips <= 0 && p.id !== winner.id).forEach(p => {
+    if (log) log.push({ type: 'elim', text: `Hand #${handNum}: ${PLAYERS[p.id].name} eliminated by ${PLAYERS[winner.id].name}`, pid: p.id });
+  });
+
+  return pot;
+}
+
+function runTournament(logArr) {
+  const ps = PLAYERS.map(p => ({ id: p.id, chips: 1000 }));
+  let handNum = 0, biggestPot = 0;
+  const blindLevels = [[10, 20], [20, 40], [30, 60], [50, 100], [100, 200], [200, 400], [400, 800], [800, 1600]];
+  const elimOrder = [];
+
+  while (true) {
+    const alive = ps.filter(p => p.chips > 0);
+    if (alive.length <= 1) return { winner: alive[0]?.id ?? 0, hands: handNum, biggestPot, elimOrder };
+    if (handNum > 500) {
+      alive.sort((a, b) => b.chips - a.chips);
+      return { winner: alive[0].id, hands: handNum, biggestPot, elimOrder };
+    }
+
+    handNum++;
+    const level = Math.min(Math.floor((handNum - 1) / 10), blindLevels.length - 1);
+    const aliveBefore = new Set(ps.filter(p => p.chips > 0).map(p => p.id));
+    const pot = playHand(ps.filter(p => p.chips > 0), blindLevels[level], handNum, logArr);
+    if (pot > biggestPot) biggestPot = pot;
+
+    ps.forEach(p => {
+      if (aliveBefore.has(p.id) && p.chips <= 0 && !elimOrder.includes(p.id)) elimOrder.push(p.id);
+    });
+  }
+}
+
+let hasRun = false;
+
+function runAndRender() {
+  const wins = new Array(6).fill(0);
+  const finishSums = new Array(6).fill(0);
+  let totalHands = 0, overallBiggest = 0;
+  let lastLog = [];
+
+  for (let i = 0; i < 100; i++) {
+    const isLast = i === 99;
+    const log = isLast ? [] : null;
+    const r = runTournament(log);
+    wins[r.winner]++;
+    totalHands += r.hands;
+    if (r.biggestPot > overallBiggest) overallBiggest = r.biggestPot;
+
+    const positions = {};
+    r.elimOrder.forEach((pid, idx) => { positions[pid] = 6 - idx; });
+    positions[r.winner] = 1;
+    PLAYERS.forEach(p => { if (!(p.id in positions)) positions[p.id] = 2; });
+    PLAYERS.forEach(p => finishSums[p.id] += (positions[p.id] || 3));
+
+    if (isLast) {
+      lastLog = log || [];
+      if (log) lastLog.push({ type: 'win', text: `WINNER: ${PLAYERS[r.winner].name} after ${r.hands} hands`, pid: r.winner });
+    }
+  }
+
+  if (!hasRun) {
+    hasRun = true;
+    document.getElementById('dealBtn').textContent = 'Run Again';
+  }
+
+  renderHistogram(wins);
+  renderStats(totalHands, overallBiggest);
+  renderStandings(wins, finishSums);
+  renderLog(lastLog);
+}
+
+function renderHistogram(wins) {
+  const maxW = Math.max(...wins, 1);
+  const el = document.getElementById('histogram');
+  el.innerHTML = '';
+
+  PLAYERS.forEach((p, i) => {
+    const pct = (wins[i] / maxW) * 240;
+    const col = document.createElement('div');
+    col.className = 'bar-col';
+
+    const stripe = `repeating-linear-gradient(0deg, ${p.color} 0px, ${p.color} 5px, rgba(0,0,0,0.15) 5px, rgba(0,0,0,0.15) 8px)`;
+
+    col.innerHTML = `
+      <div class="bar" style="height:0;background:${stripe}" data-h="${pct}">
+        <div class="bar-count" style="color:${p.color}">${wins[i]}</div>
+      </div>
+      <div class="bar-info">
+        <span class="bar-name" style="color:${p.color}">${p.name}</span>
+        <span class="bar-strat">${p.strat}</span>
+      </div>`;
+    el.appendChild(col);
+  });
+
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      el.querySelectorAll('.bar').forEach(b => { b.style.height = b.dataset.h + 'px'; });
+    });
+  });
+}
+
+function renderStats(totalHands, biggestPot) {
+  const avg = (totalHands / 100) | 0;
+  document.getElementById('stats').innerHTML = `
+    <div class="stat-card"><div class="stat-label">Avg Length</div><div class="stat-val">${avg} hands</div></div>
+    <div class="stat-card"><div class="stat-label">Biggest Pot</div><div class="stat-val">${biggestPot.toLocaleString()}</div></div>
+    <div class="stat-card"><div class="stat-label">Tournaments</div><div class="stat-val">100</div></div>
+    <div class="stat-card"><div class="stat-label">Starting Stack</div><div class="stat-val">1,000</div></div>`;
+}
+
+function renderStandings(wins, finishSums) {
+  const sorted = PLAYERS.map((p, i) => ({ ...p, avg: (finishSums[i] / 100).toFixed(2), w: wins[i] }))
+    .sort((a, b) => a.avg - b.avg);
+
+  let html = '<tr><th>#</th><th>Player</th><th>Avg Finish</th><th style="text-align:right">Wins</th></tr>';
+  sorted.forEach((p, i) => {
+    html += `<tr>
+      <td class="rank-num">${i + 1}</td>
+      <td class="pname" style="color:${p.color}">${p.name}</td>
+      <td class="avg">${p.avg}</td>
+      <td class="wins-col">${p.w}</td>
+    </tr>`;
+  });
+  document.getElementById('positions').innerHTML = html;
+}
+
+function renderLog(entries) {
+  const el = document.getElementById('log');
+  if (!entries.length) { el.innerHTML = '<span style="color:var(--muted)">No notable moments this tournament.</span>'; return; }
+  el.innerHTML = entries.map(e => {
+    const cls = e.type === 'elim' ? 'elim' : e.type === 'win' ? 'win' : e.pid === 0 ? 'gold' : '';
+    return `<div class="${cls}">${e.text}</div>`;
+  }).join('');
+}
+
+runAndRender();
+</script>
